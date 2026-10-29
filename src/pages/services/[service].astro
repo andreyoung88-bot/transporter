@@ -1,0 +1,95 @@
+---
+import Base from '../../layouts/Base.astro';
+import Arrow from '../../components/Arrow.astro';
+import Departures from '../../components/Departures.astro';
+import Faq from '../../components/Faq.astro';
+import { services, type Service } from '../../data/services';
+import { allRoutes } from '../../lib/routes';
+import { breadcrumbs, faq } from '../../lib/schema';
+
+export function getStaticPaths() {
+  return services.map((s) => ({ params: { service: s.slug }, props: { s } }));
+}
+const { s } = Astro.props as { s: Service };
+const base = (Astro.site?.toString() ?? '').replace(/\/$/, '');
+const path = `/services/${s.slug}`;
+const all = allRoutes();
+const routes = s.routes.map((slug) => all.find((r) => r.d.slug === slug)).filter((r): r is NonNullable<typeof r> => Boolean(r));
+const schema = [
+  breadcrumbs(base, [{ name: 'Home', path: '/' }, { name: s.name, path }]),
+  { '@type': 'Service', '@id': `${base}${path}#service`, name: s.name, description: s.description, provider: { '@id': `${base}/#business` }, areaServed: { '@type': 'Country', name: 'United Kingdom' }, serviceType: s.name },
+  faq(s.faqs),
+];
+const answer = s.answer.replace(/\{([a-z-]+)\.(duration|miles|from)\}/g, (_, slug: string, k: string) => {
+  const r = all.find((x) => x.d.slug === slug);
+  if (!r) throw new Error(`Unknown route token ${slug} in service ${s.slug}`);
+  return k === 'from' ? `£${r.from}` : k === 'miles' ? `${r.miles} miles` : r.duration;
+});
+const others = services.filter((x) => x.slug !== s.slug);
+---
+<Base title={s.title} description={s.description} schema={schema}>
+  <section class="sh" aria-labelledby="sh-h">
+    <div class="wrap">
+      <p class="eyebrow">Service {s.code} / {s.name}</p>
+      <h1 id="sh-h">{s.h1}</h1>
+      <div class="sh__row">
+        <p class="lede">{answer}</p>
+        <div class="sh__cta">
+          <a class="btn" href="/#estimate">Estimate a fare <Arrow /></a>
+          <a class="btn btn--ghost" href="/contact">Request a quote</a>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="section" aria-labelledby="pts-h">
+    <div class="wrap">
+      <h2 id="pts-h" class="sr-only">What is included</h2>
+      <ol class="pts">
+        {s.points.map((p, i) => (
+          <li data-reveal><span class="pts__n mono">{s.code}.{i + 1}</span><h3>{p.h}</h3><p>{p.p}</p></li>
+        ))}
+      </ol>
+    </div>
+  </section>
+  <section class="section" aria-labelledby="sr-h">
+    <div class="wrap">
+      <h2 id="sr-h" class="h2s">Typical {s.name.toLowerCase()} routes</h2>
+      <Departures routes={routes} caption={`${s.name} from Norwich`} />
+    </div>
+  </section>
+  <section class="section"><div class="wrap"><Faq items={s.faqs} heading={`${s.name}: questions`} /></div></section>
+  <section class="section" aria-labelledby="ot-h">
+    <div class="wrap">
+      <h2 id="ot-h" class="h2s">Other services</h2>
+      <ul class="others">
+        {others.map((o) => <li><a href={`/services/${o.slug}`}><span class="mono muted">{o.code}</span> {o.name} <Arrow /></a></li>)}
+      </ul>
+    </div>
+  </section>
+</Base>
+<style>
+  .sh { padding-block: 96px 72px; border-bottom: 1px solid var(--rule); }
+  .sh h1 { max-width: 14ch; margin-bottom: 40px; }
+  .sh__row { display: grid; grid-template-columns: 1.6fr 1fr; gap: 48px; align-items: end; }
+  .sh__cta { display: flex; gap: 12px; flex-wrap: wrap; justify-content: flex-end; }
+  .pts { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid var(--rule); }
+  .pts li { padding: 28px 24px 0 0; }
+  .pts li + li { border-left: 1px solid var(--rule); padding-left: 24px; }
+  .pts__n { font-size: .75rem; color: var(--amber); letter-spacing: .1em; }
+  .pts h3 { margin: 16px 0 12px; }
+  .pts p { color: var(--steel); font-size: .95rem; }
+  .h2s { font-size: clamp(2rem, 4vw, 3.4rem); margin-bottom: 36px; }
+  .others { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid var(--rule); }
+  .others li + li { border-left: 1px solid var(--rule); }
+  .others a { display: flex; gap: 14px; align-items: center; justify-content: space-between; padding: 24px; font: 600 1.4rem/1 var(--display); text-transform: uppercase; letter-spacing: .04em; text-decoration: none; }
+  .others a:hover { background: var(--gunmetal); }
+  @media (max-width: 960px) {
+    .sh__row { grid-template-columns: 1fr; }
+    .sh__cta { justify-content: flex-start; }
+    .pts { grid-template-columns: 1fr 1fr; row-gap: 32px; }
+    .pts li:nth-child(3) { border-left: 0; padding-left: 0; }
+    .others { grid-template-columns: 1fr; }
+    .others li + li { border-left: 0; border-top: 1px solid var(--rule); }
+  }
+  @media (max-width: 560px) { .pts { grid-template-columns: 1fr; } .pts li + li { border-left: 0; padding-left: 0; } }
+</style>

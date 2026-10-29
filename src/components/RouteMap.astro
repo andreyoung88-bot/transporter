@@ -1,0 +1,78 @@
+---
+import { ukPath, iePath, project, arcPath, MAP_W, MAP_H } from '../lib/projection';
+import { ORIGIN } from '../config/site';
+import type { LatLon } from '../lib/geo';
+
+interface Target extends LatLon { name: string; slug?: string }
+interface Props {
+  targets: Target[];
+  /** Highlight one route; others render as faint threads. */
+  focus?: string;
+  title: string;
+  class?: string;
+  labels?: boolean;
+}
+const { targets, focus, title, labels = true } = Astro.props;
+const [ox, oy] = project(ORIGIN);
+const id = 'rm' + Math.random().toString(36).slice(2, 7);
+// Crop the viewBox around the routes on single-route maps so the arc reads large.
+let vb = `0 0 ${MAP_W} ${MAP_H}`;
+/** Label and marker scale, so cropped maps keep the same type size on screen. */
+let k = 1;
+if (focus && targets.length === 1) {
+  const [tx, ty] = project(targets[0]);
+  const pad = 110;
+  const x0 = Math.max(0, Math.min(ox, tx) - pad);
+  const y0 = Math.max(0, Math.min(oy, ty) - pad);
+  const x1 = Math.min(MAP_W, Math.max(ox, tx) + pad);
+  const y1 = Math.min(MAP_H, Math.max(oy, ty) + pad);
+  const w = Math.max(x1 - x0, 320);
+  const h = Math.max(y1 - y0, 320);
+  vb = `${x0.toFixed(0)} ${y0.toFixed(0)} ${w.toFixed(0)} ${h.toFixed(0)}`;
+  k = Math.max(w, h * (MAP_W / MAP_H)) / MAP_W;
+}
+const grid = Array.from({ length: 13 }, (_, i) => i * 75);
+---
+<figure class:list={['rmap', Astro.props.class]}>
+  <svg viewBox={vb} style={`--k:${k.toFixed(3)}`} role="img" aria-labelledby={`${id}-t`} preserveAspectRatio="xMidYMid meet">
+    <title id={`${id}-t`}>{title}</title>
+    <g class="rmap__grid" aria-hidden="true">
+      {grid.map((g) => <path d={`M${g} 0V${MAP_H}`} />)}
+      {grid.map((g) => <path d={`M0 ${g}H${MAP_W}`} />)}
+    </g>
+    <path class="rmap__ie" d={iePath} />
+    <path class="rmap__uk" d={ukPath} />
+    {targets.map((t) => {
+      const [x, y] = project(t);
+      const on = !focus || focus === t.slug;
+      return (
+        <g class:list={['rmap__route', { 'is-on': on }]}>
+          <path class="rmap__arc" d={arcPath(ORIGIN, t)} pathLength="1" />
+          <rect x={x - 3.5 * k} y={y - 3.5 * k} width={7 * k} height={7 * k} class="rmap__pt" />
+          {labels && on && <text x={x + (x > ox - 40 ? -10 : 10) * k} y={y + 4} text-anchor={x > ox - 40 ? 'end' : 'start'} class="rmap__lbl">{t.name.toUpperCase()}</text>}
+        </g>
+      );
+    })}
+    <circle cx={ox} cy={oy} r={14 * k} class="rmap__pulse" />
+    <circle cx={ox} cy={oy} r={5 * k} class="rmap__origin" />
+    {labels && <text x={ox - 10 * k} y={oy - 14 * k} text-anchor="end" class="rmap__lbl rmap__lbl--o">NORWICH</text>}
+  </svg>
+</figure>
+<style>
+  .rmap { margin: 0; position: relative; }
+  .rmap svg { width: 100%; height: 100%; }
+  .rmap__grid path { stroke: #1d1f23; stroke-width: .6; vector-effect: non-scaling-stroke; }
+  .rmap__uk { fill: #17181b; stroke: #4a4d54; stroke-width: .8; vector-effect: non-scaling-stroke; stroke-linejoin: round; }
+  .rmap__ie { fill: #111214; stroke: #2a2c31; stroke-width: .6; vector-effect: non-scaling-stroke; }
+  .rmap__arc { fill: none; stroke: #5a4520; stroke-width: 1; vector-effect: non-scaling-stroke; }
+  .is-on .rmap__arc { stroke: var(--amber); stroke-width: 2; stroke-dasharray: 1; stroke-dashoffset: 1; animation: draw 2.4s cubic-bezier(.6,.1,.2,1) .3s forwards; }
+  .rmap__pt { fill: #5a4520; }
+  .is-on .rmap__pt { fill: var(--bone); }
+  .rmap__origin { fill: var(--amber); }
+  .rmap__pulse { fill: none; stroke: var(--amber); stroke-width: 1; vector-effect: non-scaling-stroke; transform-box: fill-box; transform-origin: center; animation: pulse 2.6s ease-out infinite; }
+  .rmap__lbl { font-family: var(--mono); font-size: calc(11px * var(--k)); letter-spacing: .12em; fill: var(--bone); paint-order: stroke; stroke: var(--asphalt); stroke-width: calc(4px * var(--k)); }
+  .rmap__lbl--o { fill: var(--amber); }
+  @keyframes draw { to { stroke-dashoffset: 0; } }
+  @keyframes pulse { from { transform: scale(.4); opacity: 1; } to { transform: scale(2.2); opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) { .is-on .rmap__arc { stroke-dashoffset: 0; animation: none; } .rmap__pulse { display: none; } }
+</style>

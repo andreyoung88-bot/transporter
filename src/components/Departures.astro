@@ -1,0 +1,47 @@
+---
+import Arrow from './Arrow.astro';
+import type { RouteInfo } from '../lib/routes';
+import { gbp } from '../lib/price';
+interface Props { routes: RouteInfo[]; caption?: string }
+const { routes, caption = 'Departures from Norwich' } = Astro.props;
+---
+<div class="dep">
+  <table class="dep__t">
+    <caption class="dep__cap mono"><span class="dep__dot" aria-hidden="true"></span>{caption}</caption>
+    <thead>
+      <tr><th scope="col">Destination</th><th scope="col" class="hide-s">Via</th><th scope="col" class="num">Miles</th><th scope="col" class="num hide-s">Time</th><th scope="col" class="num">From</th><th scope="col"><span class="sr-only">Details</span></th></tr>
+    </thead>
+    <tbody>
+      {routes.map((r) => (
+        <tr>
+          <th scope="row"><a href={`/routes/${r.d.slug}`} class="dep__name">{r.d.name}</a><span class="dep__type mono">{r.d.type}</span></th>
+          <td class="mono hide-s dep__via">{r.d.roads.slice(0, 3).join(' / ')}</td>
+          <td class="num mono">{r.miles}</td>
+          <td class="num mono hide-s">{r.duration}</td>
+          <td class="num mono amber">{gbp(r.from)}</td>
+          <td class="dep__go" aria-hidden="true"><Arrow /></td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
+<style>
+  .dep { border: 1px solid var(--rule); background: var(--gunmetal); overflow-x: auto; }
+  .dep__t { width: 100%; border-collapse: collapse; }
+  .dep__cap { text-align: left; padding: 16px 20px; font-size: .72rem; letter-spacing: .16em; text-transform: uppercase; color: var(--amber); border-bottom: 1px solid var(--rule); display: flex; gap: 10px; align-items: center; }
+  .dep__dot { width: 8px; height: 8px; background: var(--amber); animation: blink 1.6s steps(2, start) infinite; }
+  .dep__t th, .dep__t td { padding: 16px 20px; border-bottom: 1px solid var(--rule); text-align: left; white-space: nowrap; }
+  .dep__t thead th { font: 400 .68rem/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--steel); }
+  .dep__t .num { text-align: right; }
+  .dep__t tbody tr { position: relative; transition: background .15s; }
+  .dep__t tbody tr:hover { background: var(--asphalt); }
+  .dep__name { font: 600 1.35rem/1 var(--display); text-transform: uppercase; letter-spacing: .04em; text-decoration: none; }
+  .dep__name::after { content: ''; position: absolute; inset: 0; }
+  .dep__t tbody tr:hover .dep__name { color: var(--amber); }
+  .dep__type { display: block; font-size: .66rem; letter-spacing: .12em; text-transform: uppercase; color: var(--steel); margin-top: 6px; }
+  .dep__via { color: var(--steel); font-size: .8rem; }
+  .dep__go { width: 40px; color: var(--steel); }
+  .dep__t tbody tr:hover .dep__go { color: var(--amber); }
+  @keyframes blink { to { visibility: hidden; } }
+  @media (max-width: 640px) { .hide-s { display: none; } .dep__t th, .dep__t td { padding: 14px 12px; } .dep__name { font-size: 1.1rem; } }
+</style>

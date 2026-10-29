@@ -1,0 +1,269 @@
+---
+import Base from '../layouts/Base.astro';
+import Arrow from '../components/Arrow.astro';
+import Scene3D from '../components/Scene3D.astro';
+import Estimator from '../components/Estimator.astro';
+import Departures from '../components/Departures.astro';
+import Faq from '../components/Faq.astro';
+import CarProfile from '../components/CarProfile.astro';
+import { allRoutes } from '../lib/routes';
+import { vehicles, pricing } from '../config/pricing';
+import { site } from '../config/site';
+import { faq } from '../lib/schema';
+import { gbp } from '../lib/price';
+import { destinations } from '../data/destinations';
+
+const routes = allRoutes();
+const by = (s: string) => routes.find((r) => r.d.slug === s);
+const featuredSlugs = [
+  'london', 'heathrow-airport', 'stansted-airport', 'gatwick-airport', 'cambridge', 'edinburgh', 'manchester',
+  'birmingham', 'port-of-dover', 'oxford', 'leeds', 'bristol', 'cardiff', 'glasgow', 'newcastle-upon-tyne', 'york', 'belfast', 'penzance',
+];
+const featured = featuredSlugs.map(by).filter((r): r is NonNullable<typeof r> => Boolean(r));
+const board = featured.slice(0, 12);
+const ticker = featured.map((r) => `${r.d.name.toUpperCase()} ${r.miles} MI`);
+const lengths: Record<string, string> = { executive: '4.95 M', luxury: '5.29 M', mpv: '5.14 M', courier: '4.93 M' };
+
+const faqs = [
+  { q: 'Do you cover the whole of the UK from Norwich?', a: `Yes. We run from Norwich to ${destinations.length} named cities, airports and ports in England, Scotland, Wales and Northern Ireland, and to anywhere else on request. Same-day long-distance runs are routine.` },
+  { q: 'How is the price worked out?', a: `By road distance and vehicle class: from £${vehicles.find((v) => v.id === 'courier')!.perMile.toFixed(2)} a mile for secure courier and £${vehicles[0].perMile.toFixed(2)} a mile for an executive saloon, with a ${gbp(pricing.minimumFare)} minimum. Fuel and tolls are included. Your fare is fixed in writing when you book.` },
+  { q: 'Who are the drivers?', a: 'Employed, not gig workers. Every driver holds a Norwich private hire licence, has an enhanced DBS check and has completed advanced driver training. Each one signs a confidentiality agreement.' },
+  { q: 'What does the secure courier service carry?', a: 'Contracts, legal bundles, medical samples, prototypes, jewellery, artwork and anything that cannot go in a van with 200 other parcels. One consignment per car, driven direct, handed over against a signature with photo proof.' },
+  { q: 'Can I book at short notice?', a: `Usually, yes. Dispatch is staffed around the clock on ${site.phoneDisplay}, and in Norwich we can often have a car with you within the hour.` },
+];
+---
+<Base
+  title="Wensum Black | Private Driver and Secure Courier from Norwich to Anywhere in the UK"
+  description={`Discreet chauffeur, airport transfers and same-day secure courier from Norwich to ${destinations.length} UK cities, airports and ports. Fixed fares, vetted drivers, 24/7 dispatch.`}
+  schema={[faq(faqs)]}
+>
+  <section class="hero" aria-labelledby="hero-h">
+    <Scene3D class="hero__scene" routes={featured.map((r) => ({ ...r.d }))} title={`Map of routes from Norwich to ${featured.length} UK destinations`} />
+    <div class="wrap hero__in">
+      <p class="eyebrow">Norwich dispatch / 24 hours</p>
+      <h1 id="hero-h">Norwich to anywhere. <span class="amber">No questions.</span></h1>
+      <p class="lede">Executive chauffeur, airport transfers and same-day secure courier from Norwich to every city, airport and port in the UK. One car, one driver, a fixed price.</p>
+      <div class="hero__cta">
+        <a class="btn" href="#estimate">Estimate a fare <Arrow /></a>
+        <a class="btn btn--ghost" href={`tel:${site.phone.replace(/\s/g, '')}`}>Call {site.phoneDisplay}</a>
+      </div>
+      <dl class="hero__stats mono">
+        <div><dt>Destinations</dt><dd>{destinations.length}</dd></div>
+        <div><dt>Dispatch</dt><dd>24/7</dd></div>
+        <div><dt>Fares</dt><dd>Fixed</dd></div>
+        <div><dt>Drivers</dt><dd>DBS vetted</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <div class="ticker" aria-hidden="true">
+    <div class="ticker__track mono">
+      {[0, 1].map(() => ticker.map((t) => <span class="plate-sign"><b>&uarr;</b>{t}</span>))}
+    </div>
+  </div>
+
+  <section class="section terms" aria-labelledby="terms-h">
+    <div class="wrap">
+      <p class="eyebrow">The Terms</p>
+      <h2 id="terms-h" class="terms__h">Three rules. <br />We have never broken one.</h2>
+      <ol class="terms__list">
+        <li data-reveal>
+          <span class="terms__n display">01</span>
+          <h3>The price is fixed.</h3>
+          <p>You get the fare in writing before we turn a wheel. Traffic, diversions and road works are our problem, not yours.</p>
+        </li>
+        <li data-reveal>
+          <span class="terms__n display">02</span>
+          <h3>Discretion is total.</h3>
+          <p>No names on boards unless you want them. No conversations repeated. No social posts. Every driver signs a confidentiality agreement.</p>
+        </li>
+        <li data-reveal>
+          <span class="terms__n display">03</span>
+          <h3>We arrive early.</h3>
+          <p>We plan to be outside ten minutes before the booked time. Flights and traffic are tracked live, and we reroute before you notice.</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="section services" aria-labelledby="svc-h">
+    <div class="wrap">
+      <div class="split">
+        <div>
+          <p class="eyebrow">Services</p>
+          <h2 id="svc-h">Four ways to move <br />what matters.</h2>
+        </div>
+        <p class="lede muted">The same standard on every run: one vetted driver, a clean black car, direct routing and a dispatcher watching the job from start to finish.</p>
+      </div>
+      <ul class="svc">
+        <li data-reveal><a href="/services/chauffeur"><span class="svc__k mono">A / Chauffeur</span><h3>Executive chauffeur</h3><p>Board meetings, roadshows, events and days out, driven by someone who knows when to say nothing.</p><span class="svc__go">From £{vehicles[0].perMile.toFixed(2)}/mi <Arrow /></span></a></li>
+        <li data-reveal><a href="/services/airport-transfers"><span class="svc__k mono">B / Airports</span><h3>Airport transfers</h3><p>Heathrow, Stansted, Gatwick and every UK airport. Flights tracked, {pricing.airportFreeWaitingMinutes} minutes free after landing.</p><span class="svc__go">Flight tracked <Arrow /></span></a></li>
+        <li data-reveal><a href="/services/secure-courier"><span class="svc__k mono">C / Courier</span><h3>Secure courier</h3><p>One consignment, one car, driven direct. Hand to hand, against a signature, with photo proof.</p><span class="svc__go">Same day <Arrow /></span></a></li>
+        <li data-reveal><a href="/services/long-distance"><span class="svc__k mono">D / Distance</span><h3>Long-distance runs</h3><p>Edinburgh by lunch, Cornwall by dinner, Belfast via the ferry. Planned breaks and a second driver if needed.</p><span class="svc__go">UK wide <Arrow /></span></a></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="section" id="estimate" aria-labelledby="est-h">
+    <div class="wrap">
+      <div class="split">
+        <div>
+          <p class="eyebrow">Fare estimate</p>
+          <h2 id="est-h">Name the place. <br />See the price.</h2>
+        </div>
+        <p class="lede muted">Rates are per road mile, with fuel and tolls included. Night pickups, waiting and returns are added the same way on the final quote.</p>
+      </div>
+      <Estimator initial="london" />
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="dep-h">
+    <div class="wrap">
+      <div class="split">
+        <div>
+          <p class="eyebrow">Routes</p>
+          <h2 id="dep-h">The board <br />never closes.</h2>
+        </div>
+        <p class="lede muted">The runs we drive most often. Every route has its own page with the distance, drive time, prices by vehicle and local drop-off points.</p>
+      </div>
+      <Departures routes={board} />
+      <p class="more"><a class="btn btn--ghost" href="/routes">All {destinations.length} destinations <Arrow /></a></p>
+    </div>
+  </section>
+
+  <section class="section fleet" aria-labelledby="fleet-h">
+    <div class="wrap">
+      <p class="eyebrow">Fleet</p>
+      <h2 id="fleet-h">Black. Clean. <br />Unremarkable on purpose.</h2>
+      <ul class="fleet__grid">
+        {vehicles.map((v) => (
+          <li class="fleet__card" data-reveal>
+            <CarProfile kind={v.id} length={lengths[v.id]} />
+            <h3>{v.name}</h3>
+            <p class="mono muted fleet__model">{v.model}</p>
+            <p>{v.summary}</p>
+            <dl class="kv">
+              <div><dt>Rate</dt><dd>£{v.perMile.toFixed(2)}/mi</dd></div>
+              <div><dt>Capacity</dt><dd>{v.seats ? `${v.seats} pax / ${v.bags} cases` : 'Up to 300 kg'}</dd></div>
+            </dl>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <section class="section how" aria-labelledby="how-h">
+    <div class="wrap">
+      <p class="eyebrow">Procedure</p>
+      <h2 id="how-h">How a run works</h2>
+      <ol class="how__list">
+        <li><span class="mono amber">T&minus;24h</span><h3>Quote</h3><p>Use the estimator, call or WhatsApp. A fixed fare comes back within 15 minutes.</p></li>
+        <li><span class="mono amber">T&minus;12h</span><h3>Confirm</h3><p>Written confirmation with the fare, pickup point and any instructions.</p></li>
+        <li><span class="mono amber">T&minus;1h</span><h3>Driver</h3><p>Driver name, car and registration by text. Live location from the moment they set off.</p></li>
+        <li><span class="mono amber">T&nbsp;0</span><h3>Delivered</h3><p>Door to door, or hand to hand with a signature and photo proof for courier jobs.</p></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap"><Faq items={faqs} heading="Before you book" /></div>
+  </section>
+
+  <section class="cta">
+    <div class="wrap cta__in">
+      <h2>Where to?</h2>
+      <div class="cta__row">
+        <a class="btn" href="/contact">Request a fixed quote <Arrow /></a>
+        <a class="btn btn--ghost" href={`https://wa.me/${site.whatsapp}`} rel="noopener" target="_blank">WhatsApp dispatch<span class="sr-only"> (opens in a new tab)</span></a>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .hero { position: relative; min-height: min(100svh, 980px); display: flex; align-items: flex-end; overflow: hidden; border-bottom: 1px solid var(--rule); }
+  .hero__scene { position: absolute; inset: 0 0 0 30%; }
+  .hero::before { content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none; background: linear-gradient(90deg, var(--asphalt) 18%, rgba(11, 11, 12, .6) 48%, rgba(11, 11, 12, 0) 75%), linear-gradient(0deg, var(--asphalt) 0, rgba(11, 11, 12, 0) 30%); }
+  .hero__in { position: relative; z-index: 2; padding-block: 140px 56px; }
+  .hero h1 { max-width: 11ch; margin-bottom: 28px; }
+  .hero .lede { margin-bottom: 36px; }
+  .hero__cta { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 72px; }
+  .hero__stats { display: grid; grid-template-columns: repeat(4, minmax(0, 180px)); border-top: 1px solid var(--rule); margin: 0; }
+  .hero__stats div { padding: 18px 18px 0 0; }
+  .hero__stats dt { font-size: .68rem; letter-spacing: .14em; text-transform: uppercase; color: var(--steel); margin-bottom: 6px; }
+  .hero__stats dd { margin: 0; font-size: 1.05rem; }
+
+  .ticker { overflow: hidden; border-bottom: 1px solid var(--rule); background: var(--gunmetal); }
+  .ticker__track { display: flex; gap: 12px; width: max-content; padding: 14px 0; animation: tick 60s linear infinite; }
+  .ticker:hover .ticker__track { animation-play-state: paused; }
+  .plate-sign { display: inline-flex; gap: 10px; align-items: center; padding: 8px 14px; background: #0f3b2a; color: #f4f4f0; font-size: .8rem; letter-spacing: .08em; border: 1px solid #2e6b51; white-space: nowrap; }
+  .plate-sign:nth-child(3n) { background: #12305e; border-color: #3a5b91; }
+  .plate-sign b { font-weight: 400; color: var(--amber); }
+  @keyframes tick { to { transform: translateX(-50%); } }
+
+  .split { display: grid; grid-template-columns: 1.2fr 1fr; gap: 48px; align-items: end; margin-bottom: 56px; }
+  .split .lede { margin: 0; }
+
+  .terms__h { max-width: 16ch; margin-bottom: 72px; }
+  .terms__list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--rule); }
+  .terms__list li { padding: 32px 32px 0 0; border-right: 1px solid var(--rule); margin-right: 32px; }
+  .terms__list li:last-child { border-right: 0; margin-right: 0; }
+  .terms__n { font-size: clamp(5rem, 10vw, 9rem); color: transparent; -webkit-text-stroke: 1px var(--amber); display: block; line-height: .8; margin-bottom: 28px; }
+  .terms__list h3 { margin-bottom: 14px; }
+  .terms__list p { color: var(--steel); }
+
+  .svc { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--rule); }
+  .svc li + li { border-left: 1px solid var(--rule); }
+  .svc a { display: flex; flex-direction: column; gap: 14px; height: 100%; padding: 28px 24px; text-decoration: none; transition: background .2s; }
+  .svc a:hover { background: var(--gunmetal); color: inherit; }
+  .svc__k { font-size: .7rem; letter-spacing: .14em; text-transform: uppercase; color: var(--steel); }
+  .svc p { color: var(--steel); font-size: .95rem; margin: 0; }
+  .svc__go { margin-top: auto; padding-top: 28px; display: flex; justify-content: space-between; align-items: center; font: 400 .78rem var(--mono); color: var(--amber); }
+  .svc a:hover h3 { color: var(--amber); }
+
+  .more { margin: 32px 0 0; }
+
+  .fleet h2 { margin-bottom: 56px; }
+  .fleet__grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--rule); border: 1px solid var(--rule); }
+  .fleet__card { background: var(--gunmetal); padding: 28px 24px; display: flex; flex-direction: column; gap: 10px; }
+  .fleet__card .car { margin-bottom: 18px; }
+  .fleet__model { font-size: .75rem; margin: 0; }
+  .fleet__card > p:not(.fleet__model) { color: var(--steel); font-size: .94rem; }
+  .fleet__card .kv { margin-top: auto; }
+
+  .how h2 { margin-bottom: 56px; }
+  .how__list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); counter-reset: s; }
+  .how__list li { border-top: 2px solid var(--rule); padding: 24px 24px 0 0; position: relative; }
+  .how__list li::before { content: ''; position: absolute; top: -2px; left: 0; width: 48px; height: 2px; background: var(--amber); }
+  .how__list span { font-size: .78rem; letter-spacing: .1em; }
+  .how__list h3 { margin: 14px 0 10px; }
+  .how__list p { color: var(--steel); font-size: .95rem; }
+
+  .cta { background: var(--amber); color: var(--asphalt); }
+  .cta__in { display: flex; justify-content: space-between; align-items: center; gap: 32px; padding-block: 72px; flex-wrap: wrap; }
+  .cta h2 { font-size: clamp(4rem, 12vw, 10rem); line-height: .85; }
+  .cta__row { display: flex; gap: 12px; flex-wrap: wrap; }
+  .cta .btn { background: var(--asphalt); color: var(--bone); border-color: var(--asphalt); }
+  .cta .btn:hover { background: var(--bone); color: var(--asphalt); border-color: var(--bone); }
+  .cta .btn--ghost { background: transparent; color: var(--asphalt); border-color: var(--asphalt); }
+  .cta :focus-visible { outline-color: var(--asphalt); }
+
+  @media (max-width: 1080px) {
+    .svc, .fleet__grid { grid-template-columns: 1fr 1fr; }
+    .svc li:nth-child(3) { border-left: 0; }
+    .svc li:nth-child(n + 3) { border-top: 1px solid var(--rule); }
+    .how__list { grid-template-columns: 1fr 1fr; row-gap: 40px; }
+  }
+  @media (max-width: 860px) {
+    .hero__scene { inset: 0; opacity: .55; }
+    .hero::before { background: linear-gradient(0deg, var(--asphalt) 35%, rgba(11, 11, 12, .3) 80%); }
+    .hero__stats { grid-template-columns: 1fr 1fr; }
+    .split { grid-template-columns: 1fr; gap: 20px; }
+    .terms__list { grid-template-columns: 1fr; }
+    .terms__list li { border-right: 0; margin-right: 0; border-bottom: 1px solid var(--rule); padding-bottom: 28px; }
+  }
+  @media (max-width: 560px) {
+    .svc, .fleet__grid, .how__list { grid-template-columns: 1fr; }
+    .svc li + li { border-left: 0; border-top: 1px solid var(--rule); }
+  }
+</style>

@@ -1,0 +1,192 @@
+---
+import Base from '../../layouts/Base.astro';
+import Arrow from '../../components/Arrow.astro';
+import Scene3D from '../../components/Scene3D.astro';
+import Estimator from '../../components/Estimator.astro';
+import Departures from '../../components/Departures.astro';
+import Faq from '../../components/Faq.astro';
+import { allRoutes, routeInfo, REGION_NOTES, regionSlug, type RouteInfo } from '../../lib/routes';
+import { destinations } from '../../data/destinations';
+import { vehicles, pricing } from '../../config/pricing';
+import { breadcrumbs, faq, routeService } from '../../lib/schema';
+import { gbp } from '../../lib/price';
+import { site } from '../../config/site';
+
+export function getStaticPaths() {
+  return destinations.map((d) => ({ params: { slug: d.slug }, props: { slug: d.slug } }));
+}
+
+const r: RouteInfo = routeInfo(destinations.find((d) => d.slug === Astro.props.slug)!);
+const { d } = r;
+const base = (Astro.site?.toString() ?? '').replace(/\/$/, '');
+const path = `/routes/${d.slug}`;
+const all = allRoutes();
+const nearby = r.nearby.map((n) => all.find((x) => x.d.slug === n.slug)!);
+const typeLabel = { city: 'City', town: 'Town', airport: 'Airport', port: 'Port' }[d.type];
+const code = d.slug.replace(/-(airport|port|cruise-terminal)$/, '').replace(/^port-of-/, '').slice(0, 3).toUpperCase();
+const schema = [
+  breadcrumbs(base, [
+    { name: 'Home', path: '/' },
+    { name: 'Routes', path: '/routes' },
+    { name: `Norwich to ${d.name}`, path },
+  ]),
+  routeService(base, { path, name: `Norwich to ${d.name} private driver and courier`, description: r.description, destination: d.name, low: Math.min(...r.prices.map((p) => p.low)), high: Math.max(...r.prices.map((p) => p.high)) }),
+  faq(r.faqs),
+];
+---
+<Base title={r.title} description={r.description} schema={schema} ogImage={`/og/${d.slug}.jpg`}>
+  <section class="rh" aria-labelledby="rh-h">
+    <div class="wrap rh__grid">
+      <div class="rh__copy">
+        <nav aria-label="Breadcrumb" class="crumbs mono">
+          <ol>
+            <li><a href="/">Home</a></li>
+            <li><a href="/routes">Routes</a></li>
+            <li><a href={`/routes#${regionSlug(d.region)}`}>{d.region}</a></li>
+            <li aria-current="page">{d.name}</li>
+          </ol>
+        </nav>
+        <p class="eyebrow">Route NRW &rarr; {code} / {typeLabel}</p>
+        <h1 id="rh-h">{r.h1}</h1>
+        <p class="lede rh__answer">{r.answer}</p>
+        <div class="rh__cta">
+          <a class="btn" href={`/contact?to=${d.slug}`}>Book from {gbp(r.from)} <Arrow /></a>
+          <a class="btn btn--ghost" href="#estimate">Adjust the estimate</a>
+        </div>
+      </div>
+      <Scene3D class="rh__map" routes={[d]} focus={d.slug} title={`Map of the route from Norwich to ${d.name}, ${r.miles} miles ${r.direction}`} />
+    </div>
+  </section>
+
+  <div class="wrap">
+    <div class="sign" aria-label={`Route: ${d.roads.join(', ')} to ${d.name}, ${r.miles} miles`} role="img">
+      <span class="sign__roads">{d.roads.map((rd) => <b class:list={['sign__rd', { 'sign__rd--m': rd.startsWith('M') }]}>{rd}</b>)}</span>
+      <span class="sign__to">{d.name}</span>
+      <span class="sign__mi">{r.miles}<small>mi</small></span>
+    </div>
+  </div>
+
+  <section class="section facts" aria-labelledby="facts-h">
+    <div class="wrap facts__grid">
+      <div>
+        <h2 id="facts-h" class="facts__h">The run</h2>
+        <dl class="kv">
+          <div><dt>From</dt><dd>Anywhere in Norwich</dd></div>
+          <div><dt>To</dt><dd>{d.name}</dd></div>
+          <div><dt>Distance</dt><dd>{r.miles} miles</dd></div>
+          <div><dt>Drive time</dt><dd>{r.duration}</dd></div>
+          <div><dt>Heading</dt><dd>{r.direction}</dd></div>
+          <div><dt>Roads</dt><dd>{d.roads.join(' / ')}</dd></div>
+          {d.ferry && <div><dt>Crossing</dt><dd>{d.ferry}</dd></div>}
+          <div><dt>Region</dt><dd>{d.region}</dd></div>
+        </dl>
+      </div>
+      <div>
+        <h2 class="facts__h">Prices by vehicle</h2>
+        <table class="table">
+          <caption class="sr-only">One-way fares from Norwich to {d.name}</caption>
+          <thead><tr><th scope="col">Vehicle</th><th scope="col">Capacity</th><th scope="col" class="num">From</th><th scope="col" class="num">Typical</th></tr></thead>
+          <tbody>
+            {r.prices.map((p) => {
+              const v = vehicles.find((x) => x.id === p.id)!;
+              return (
+                <tr>
+                  <th scope="row">{p.name}</th>
+                  <td class="muted">{v.seats ? `${v.seats} passengers, ${v.bags} cases` : 'Documents and parcels'}</td>
+                  <td class="num mono amber">{gbp(p.low)}</td>
+                  <td class="num mono">{gbp(p.total)}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+        <p class="muted small">One way, fuel and tolls included{d.ferry ? ', vehicle ferry fare included' : ''}. Night pickups add {Math.round((pricing.nightMultiplier - 1) * 100)}%. Returns booked together save {Math.round(pricing.returnDiscount * 100)}% on the way back.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section about" aria-labelledby="about-h">
+    <div class="wrap about__grid">
+      <div>
+        <p class="eyebrow">Destination brief</p>
+        <h2 id="about-h">{d.name}</h2>
+      </div>
+      <div class="about__body">
+        <p class="lede">{d.blurb}</p>
+        <h3 class="about__sub">Common drop-off points</h3>
+        <ul class="drops mono">
+          {d.landmarks.map((l) => <li>{l}</li>)}
+        </ul>
+        <h3 class="about__sub">Most booked for</h3>
+        <p>{d.useCase}.</p>
+        <h3 class="about__sub">Driving the {d.region}</h3>
+        <p class="muted">{REGION_NOTES[d.region]}</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="estimate" aria-labelledby="est-h">
+    <div class="wrap">
+      <h2 id="est-h" class="est-h">Price your run to {d.name}</h2>
+      <Estimator initial={d.slug} heading="Your journey" />
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap"><Faq items={r.faqs} heading={`Norwich to ${d.name}: questions`} /></div>
+  </section>
+
+  <section class="section" aria-labelledby="near-h">
+    <div class="wrap">
+      <h2 id="near-h" class="est-h">Also near {d.name}</h2>
+      <Departures routes={nearby} caption={`Routes near ${d.name}`} />
+      <p class="more mono"><a href="/routes">All destinations</a> / <a href={`/services/${d.type === 'airport' ? 'airport-transfers' : 'chauffeur'}`}>{d.type === 'airport' ? 'Airport transfers' : 'Chauffeur service'}</a> / <a href="/services/secure-courier">Secure courier</a> / <a href={`tel:${site.phone.replace(/\s/g, '')}`}>{site.phoneDisplay}</a></p>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .rh { border-bottom: 1px solid var(--rule); }
+  .rh__grid { display: grid; grid-template-columns: 1.05fr 1fr; gap: 48px; align-items: stretch; min-height: min(84svh, 820px); }
+  .rh__copy { padding-block: 48px 64px; display: flex; flex-direction: column; justify-content: flex-end; }
+  .rh h1 { font-size: clamp(2.8rem, 6.4vw, 6.2rem); margin-bottom: 28px; }
+  .rh__answer { margin-bottom: 32px; }
+  .rh__cta { display: flex; gap: 12px; flex-wrap: wrap; }
+  .rh__map { min-height: 420px; border-left: 1px solid var(--rule); }
+  .crumbs { margin-bottom: auto; padding-bottom: 40px; }
+  .crumbs ol { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; margin: 0; padding: 0; font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; color: var(--steel); }
+  .crumbs li + li::before { content: '/'; margin-right: 8px; color: var(--rule); }
+  .crumbs a { text-decoration: none; color: var(--steel); display: inline-block; padding: 6px 0; }
+  .crumbs a:hover { color: var(--amber); }
+  .crumbs [aria-current] { color: var(--bone); padding: 6px 0; }
+
+  .sign { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; background: #0f3b2a; border: 2px solid #f4f4f0; outline: 6px solid #0f3b2a; margin: -32px 0 0; position: relative; z-index: 2; padding: 18px 24px; color: #f4f4f0; font-family: 'Arial Narrow', var(--display); }
+  .sign__roads { display: flex; gap: 8px; flex-wrap: wrap; }
+  .sign__rd { font: 600 1.1rem/1 var(--display); padding: 6px 10px; background: #0f3b2a; color: #f2c21b; border: 1.5px solid #f4f4f0; }
+  .sign__rd--m { background: #12305e; color: #f4f4f0; }
+  .sign__to { font: 600 clamp(1.6rem, 4vw, 2.6rem)/1 var(--display); text-transform: none; letter-spacing: .02em; flex: 1; }
+  .sign__mi { font: 600 clamp(1.6rem, 4vw, 2.6rem)/1 var(--display); }
+  .sign__mi small { font-size: .5em; margin-left: 4px; }
+
+  .facts__grid { display: grid; grid-template-columns: 1fr 1.4fr; gap: 64px; }
+  .facts__h { font-size: 1.9rem; margin-bottom: 20px; }
+  .small { font-size: .82rem; margin-top: 16px; }
+
+  .about__grid { display: grid; grid-template-columns: 1fr 1.6fr; gap: 48px; }
+  .about__body .lede { margin-bottom: 36px; }
+  .about__sub { font-size: 1.15rem; margin: 28px 0 12px; color: var(--amber); }
+  .drops { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 8px; font-size: .82rem; }
+  .drops li { border: 1px solid var(--rule); padding: 10px 14px; }
+
+  .est-h { font-size: clamp(2rem, 4vw, 3.4rem); margin-bottom: 36px; }
+  .more { margin-top: 24px; font-size: .82rem; color: var(--steel); }
+  .more a { display: inline-block; padding: 8px 0; }
+
+  @media (max-width: 960px) {
+    .rh__grid { grid-template-columns: 1fr; min-height: 0; gap: 0; }
+    .rh__map { min-height: 360px; border-left: 0; border-top: 1px solid var(--rule); margin-inline: calc(var(--gutter) * -1); }
+    .rh__copy { padding-bottom: 40px; }
+    .sign { margin-top: 32px; }
+    .facts__grid, .about__grid { grid-template-columns: 1fr; gap: 40px; }
+  }
+</style>

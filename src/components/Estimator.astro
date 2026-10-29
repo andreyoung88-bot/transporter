@@ -1,0 +1,171 @@
+---
+import Arrow from './Arrow.astro';
+import { vehicles } from '../config/pricing';
+import { allRoutes, REGION_ORDER } from '../lib/routes';
+import { estimate, gbp } from '../lib/price';
+import { site } from '../config/site';
+
+interface Props { initial?: string; heading?: string }
+const { initial = 'london', heading = 'Estimate the fare' } = Astro.props;
+const routes = allRoutes();
+const first = routes.find((r) => r.d.slug === initial) ?? routes[0];
+const q = estimate({ miles: first.miles, vehicle: 'executive', ferry: first.d.ferry, airport: first.d.type === 'airport' });
+const table = Object.fromEntries(routes.map((r) => [r.d.slug, [r.miles, r.minutes, r.d.type === 'airport' ? 1 : 0, r.d.ferry ?? '', r.d.name]]));
+const groups = REGION_ORDER.map((g) => ({ g, items: routes.filter((r) => r.d.region === g) })).filter((x) => x.items.length);
+---
+<div class="est" id="estimator">
+  <form class="est__form" action="/contact" method="get" aria-describedby="est-note">
+    <h3 class="est__h">{heading}</h3>
+    <div class="fld">
+      <label for="est-to">Destination from Norwich</label>
+      <select id="est-to" name="to">
+        {groups.map(({ g, items }) => (
+          <optgroup label={g}>
+            {items.map((r) => <option value={r.d.slug} selected={r.d.slug === first.d.slug}>{r.d.name}</option>)}
+          </optgroup>
+        ))}
+      </select>
+    </div>
+    <fieldset class="fld">
+      <legend>Vehicle</legend>
+      <div class="est__veh">
+        {vehicles.map((v, i) => (
+          <label class="veh">
+            <input type="radio" name="v" value={v.id} checked={i === 0} />
+            <span class="veh__n">{v.name}</span>
+            <span class="veh__m mono">{v.seats ? `${v.seats} seats / ${v.bags} cases` : 'Parcels and documents'}</span>
+          </label>
+        ))}
+      </div>
+    </fieldset>
+    <div class="est__opts">
+      <label class="chk"><input type="checkbox" name="r" value="1" /> <span>Return journey <span class="muted">(10% off the way back)</span></span></label>
+      <label class="chk"><input type="checkbox" name="n" value="1" /> <span>Pickup 22:00 to 06:00</span></label>
+      <div class="fld fld--inline">
+        <label for="est-wait">Waiting</label>
+        <select id="est-wait" name="w">
+          <option value="0">None</option>
+          <option value="60">1 hour</option>
+          <option value="120">2 hours</option>
+          <option value="240">4 hours</option>
+          <option value="480">Full day</option>
+        </select>
+      </div>
+    </div>
+    <noscript><button class="btn" type="submit">Request this quote <Arrow /></button></noscript>
+  </form>
+
+  <div class="est__docket">
+    <p class="sr-only" aria-live="polite" data-o="live"></p>
+    <div class="docket__top mono"><span>Fare estimate</span><span data-o="ref">NRW-{first.d.slug.slice(0, 3).toUpperCase()}</span></div>
+    <p class="docket__route display"><span>Norwich</span> <span class="amber" aria-hidden="true">&rarr;</span><span class="sr-only">to</span> <span data-o="name">{first.d.name}</span></p>
+    <p class="docket__price num"><span data-o="total">{gbp(q.total)}</span></p>
+    <p class="docket__band mono muted">Range <span data-o="band">{gbp(q.low)} to {gbp(q.high)}</span></p>
+    <dl class="kv docket__kv">
+      <div><dt>Distance</dt><dd data-o="miles">{first.miles} mi</dd></div>
+      <div><dt>Drive time</dt><dd data-o="time">{first.duration}</dd></div>
+    </dl>
+    <ul class="docket__lines mono" data-o="lines">
+      {q.lines.map((l) => <li><span>{l.label}</span><span>{gbp(l.amount)}</span></li>)}
+    </ul>
+    <div class="docket__cta">
+      <a class="btn" data-o="book" href={`/contact?to=${first.d.slug}`}>Book this fare <Arrow /></a>
+      <a class="btn btn--ghost" data-o="wa" href={`https://wa.me/${site.whatsapp}`} rel="noopener" target="_blank">WhatsApp<span class="sr-only"> (opens in a new tab)</span></a>
+    </div>
+    <p id="est-note" class="docket__note muted">Estimate only. Your fixed fare is confirmed in writing at booking and includes fuel and tolls.</p>
+  </div>
+</div>
+
+<script type="application/json" id="est-data" set:html={JSON.stringify(table)} />
+
+<script>
+  import { estimate, gbp } from '../lib/price';
+  import { formatDuration } from '../lib/geo';
+  import { site } from '../config/site';
+
+  const root = document.getElementById('estimator');
+  const dataEl = document.getElementById('est-data');
+  if (root && dataEl) {
+    const table: Record<string, [number, number, number, string, string]> = JSON.parse(dataEl.textContent || '{}');
+    const form = root.querySelector('form')!;
+    const out = (k: string) => root.querySelector<HTMLElement>(`[data-o="${k}"]`)!;
+    const update = (announce: unknown = true) => {
+      const f = new FormData(form);
+      const slug = String(f.get('to'));
+      const row = table[slug];
+      if (!row) return;
+      const [miles, minutes, airport, ferry, name] = row;
+      const vehicle = String(f.get('v')) as any;
+      const ret = f.get('r') === '1';
+      const night = f.get('n') === '1';
+      const wait = Number(f.get('w') || 0);
+      const q = estimate({ miles, vehicle, airport: !!airport, ferry: ferry || undefined, returnTrip: ret, night, waitingMinutes: wait });
+      out('name').textContent = name;
+      if (announce) out('live').textContent = `Estimate for Norwich to ${name}: ${gbp(q.total)}`;
+      out('total').textContent = gbp(q.total);
+      out('band').textContent = `${gbp(q.low)} to ${gbp(q.high)}`;
+      out('miles').textContent = `${miles} mi${ret ? ' each way' : ''}`;
+      out('time').textContent = formatDuration(minutes);
+      out('ref').textContent = `NRW-${slug.slice(0, 3).toUpperCase()}`;
+      const ul = out('lines');
+      ul.replaceChildren(
+        ...q.lines.map((l) => {
+          const li = document.createElement('li');
+          const a = document.createElement('span');
+          const b = document.createElement('span');
+          a.textContent = l.label;
+          b.textContent = gbp(l.amount);
+          li.append(a, b);
+          return li;
+        }),
+      );
+      const params = new URLSearchParams({ to: slug, v: vehicle, ...(ret ? { r: '1' } : {}), ...(night ? { n: '1' } : {}), ...(wait ? { w: String(wait) } : {}) });
+      (out('book') as HTMLAnchorElement).href = `/contact?${params}`;
+      const msg = `Hello Wensum Black. Quote request: Norwich to ${name}, ${vehicle}${ret ? ', return' : ''}${night ? ', night pickup' : ''}. Estimate shown ${gbp(q.total)}.`;
+      (out('wa') as HTMLAnchorElement).href = `https://wa.me/${site.whatsapp}?text=${encodeURIComponent(msg)}`;
+    };
+    form.addEventListener('input', update);
+    form.addEventListener('change', update);
+    update(false);
+  }
+</script>
+
+<style>
+  .est { display: grid; grid-template-columns: 1.15fr 1fr; border: 1px solid var(--rule); background: var(--gunmetal); }
+  .est__form { padding: clamp(22px, 3vw, 40px); border-right: 1px solid var(--rule); display: grid; gap: 26px; align-content: start; }
+  .est__h { font-size: 1.8rem; }
+  .fld { border: 0; padding: 0; margin: 0; display: grid; gap: 10px; min-width: 0; }
+  .fld > label, .fld > legend { font: 400 .72rem/1.4 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--steel); padding: 0; margin-bottom: 10px; }
+  select { appearance: none; width: 100%; min-height: 52px; background: var(--asphalt) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23f2a93b' stroke-width='1.5'/%3E%3C/svg%3E") no-repeat right 16px center; border: 1px solid var(--rule); padding: 0 44px 0 16px; font-size: 1.05rem; cursor: pointer; }
+  select:hover { border-color: var(--steel); }
+  .est__veh { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border-top: 1px solid var(--rule); border-left: 1px solid var(--rule); }
+  .veh { position: relative; display: grid; gap: 4px; padding: 16px; border-right: 1px solid var(--rule); border-bottom: 1px solid var(--rule); cursor: pointer; min-height: 76px; }
+  .veh input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+  .veh__n { font: 600 1.15rem/1 var(--display); letter-spacing: .06em; text-transform: uppercase; }
+  .veh__m { font-size: .72rem; color: var(--steel); }
+  .veh:has(input:checked) { background: var(--asphalt); box-shadow: inset 3px 0 0 var(--amber); }
+  .veh:has(input:checked) .veh__n { color: var(--amber); }
+  .veh:has(input:focus-visible) { outline: 2px solid var(--amber); outline-offset: -2px; }
+  .est__opts { display: grid; gap: 14px; }
+  .chk { display: flex; gap: 12px; align-items: center; cursor: pointer; min-height: 32px; }
+  .chk input { width: 20px; height: 20px; accent-color: var(--amber); margin: 0; flex: none; }
+  .fld--inline { grid-template-columns: auto 1fr; align-items: center; gap: 16px; }
+  .fld--inline > label { margin: 0; }
+  .est__docket { display: flex; flex-direction: column; padding: clamp(22px, 3vw, 40px); background: var(--asphalt); position: relative; }
+  .est__docket::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 3px; background: repeating-linear-gradient(90deg, var(--amber) 0 18px, transparent 18px 28px); }
+  .docket__top { display: flex; justify-content: space-between; font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; color: var(--steel); margin-bottom: 26px; }
+  .docket__route { font-size: clamp(1.6rem, 3vw, 2.4rem); line-height: 1; margin: 0 0 18px; }
+  .docket__price { font-size: clamp(3.4rem, 7vw, 6rem); line-height: 1; margin: 0; color: var(--bone); letter-spacing: -.03em; }
+  .docket__band { font-size: .8rem; margin: 8px 0 22px; }
+  .docket__kv { margin-bottom: 18px; }
+  .docket__lines { list-style: none; margin: 0 0 26px; padding: 0; font-size: .78rem; color: var(--steel); }
+  .docket__lines li { display: flex; justify-content: space-between; gap: 16px; padding: 6px 0; border-bottom: 1px dashed var(--rule); }
+  .docket__cta { display: flex; gap: 10px; flex-wrap: wrap; margin-top: auto; }
+  .docket__cta .btn { flex: 1; }
+  .docket__note { font-size: .78rem; margin: 18px 0 0; }
+  @media (max-width: 920px) {
+    .est { grid-template-columns: 1fr; }
+    .est__form { border-right: 0; border-bottom: 1px solid var(--rule); }
+  }
+  @media (max-width: 420px) { .est__veh { grid-template-columns: 1fr; } }
+</style>

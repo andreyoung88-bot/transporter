@@ -1,0 +1,20 @@
+---
+import Prose from '../layouts/Prose.astro';
+---
+<Prose title="Cookie Policy" description="The cookies the Wensum Black website sets, what each one does and how to change your choice." h1="Cookie policy" eyebrow="Legal" updated="29 October 2026">
+  <p>We set as few cookies as possible. Analytics cookies are only set if you choose Accept or enable them in settings. Rejecting them does not change how the site works.</p>
+  <table class="table">
+    <caption class="sr-only">Cookies used on this site</caption>
+    <thead><tr><th scope="col">Name</th><th scope="col">Purpose</th><th scope="col">Type</th><th scope="col">Expires</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">wb_consent</td><td>Remembers your cookie choice</td><td>Strictly necessary</td><td>6 months</td></tr>
+      <tr><td class="mono">_ga</td><td>Google Analytics: tells visits apart</td><td>Analytics (opt-in)</td><td>13 months</td></tr>
+      <tr><td class="mono">_ga_*</td><td>Google Analytics: keeps session state</td><td>Analytics (opt-in)</td><td>13 months</td></tr>
+    </tbody>
+  </table>
+  <h2>Google Consent Mode</h2>
+  <p>The site loads with every Google storage signal set to "denied". Google Analytics is only downloaded after you give consent. No advertising or personalisation signals are ever granted.</p>
+  <h2>Changing your mind</h2>
+  <p><button type="button" class="btn btn--ghost" data-cookie-settings>Open cookie settings</button></p>
+  <p>You can also delete cookies in your browser settings at any time.</p>
+</Prose>

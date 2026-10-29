@@ -1,0 +1,60 @@
+---
+/**
+ * Static SVG map first (zero JS, instant paint), upgraded to the three.js
+ * scene on first interaction or when the browser is idle. Skipped for
+ * reduced motion, Save-Data and devices without WebGL.
+ */
+import RouteMap from './RouteMap.astro';
+import type { LatLon } from '../lib/geo';
+
+interface Props {
+  routes: (LatLon & { name: string; slug: string })[];
+  focus?: string;
+  title: string;
+  class?: string;
+}
+const { routes, focus, title } = Astro.props;
+---
+<div class:list={['s3d', Astro.props.class]} data-s3d data-routes={routes.map((r) => r.slug).join(',')} data-focus={focus}>
+  <RouteMap targets={routes} focus={focus} title={title} class="s3d__poster" labels={Boolean(focus)} />
+  <canvas class="s3d__canvas" aria-hidden="true"></canvas>
+  <span class="s3d__tag mono" aria-hidden="true">Live route model</span>
+</div>
+<script>
+  const els = document.querySelectorAll<HTMLElement>('[data-s3d]');
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const saveData = (navigator as any).connection?.saveData === true;
+  const gl = (() => { try { return !!document.createElement('canvas').getContext('webgl2'); } catch { return false; } })();
+
+  if (els.length && !reduce && !saveData && gl) {
+    let started = false;
+    const start = () => {
+      if (started) return;
+      started = true;
+      ['pointermove', 'touchstart', 'scroll', 'keydown', 'wheel'].forEach((ev) => removeEventListener(ev, start));
+      import('../islands/route3d').then(({ mount }) => {
+        els.forEach((el) => {
+          const canvas = el.querySelector('canvas')!;
+          mount(canvas, '/geo/uk.json', {
+            routes: (el.dataset.routes ?? '').split(',').filter(Boolean),
+            focus: el.dataset.focus || undefined,
+            onReady: () => requestAnimationFrame(() => el.classList.add('is-live')),
+          }).catch(() => {});
+        });
+      });
+    };
+    ['pointermove', 'touchstart', 'scroll', 'keydown', 'wheel'].forEach((ev) => addEventListener(ev, start, { once: true, passive: true }));
+    // Idle fallback for visitors who just watch.
+    addEventListener('load', () => setTimeout(() => ('requestIdleCallback' in window ? requestIdleCallback(start) : start()), 6000));
+  }
+</script>
+<style>
+  .s3d { position: relative; overflow: hidden; }
+  .s3d__poster, .s3d__canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .s3d__poster { transition: opacity 1.2s ease; }
+  .s3d__canvas { opacity: 0; transition: opacity 1.2s ease; }
+  .s3d.is-live .s3d__canvas { opacity: 1; }
+  .s3d.is-live .s3d__poster { opacity: 0; }
+  .s3d__tag { position: absolute; right: 12px; bottom: 12px; font-size: .68rem; letter-spacing: .14em; text-transform: uppercase; color: var(--steel); opacity: 0; transition: opacity .6s 1s; }
+  .s3d.is-live .s3d__tag { opacity: 1; }
+</style>

@@ -1,0 +1,76 @@
+---
+import Logo from './Logo.astro';
+import { site } from '../config/site';
+import { destinations } from '../data/destinations';
+const featured = ['london', 'heathrow-airport', 'stansted-airport', 'gatwick-airport', 'cambridge', 'edinburgh', 'manchester', 'birmingham', 'port-of-dover', 'oxford']
+  .map((s) => destinations.find((d) => d.slug === s))
+  .filter((d): d is NonNullable<typeof d> => Boolean(d));
+const year = new Date().getFullYear();
+---
+<footer class="ftr">
+  <div class="wrap">
+    <p class="ftr__big display" aria-hidden="true">Norwich <span class="amber">&rarr;</span> anywhere</p>
+    <div class="ftr__grid">
+      <div>
+        <Logo />
+        <address class="ftr__nap">
+          {site.legalName}<br />
+          {site.address.street}, {site.address.locality}<br />
+          {site.address.region} {site.address.postcode}<br />
+          <a href={`tel:${site.phone.replace(/\s/g, '')}`} class="mono">{site.phoneDisplay}</a><br />
+          <a href={`mailto:${site.email}`}>{site.email}</a>
+        </address>
+        <p class="muted small">Licensed private hire operator. Dispatch staffed 24 hours, 365 days.</p>
+      </div>
+      <nav aria-label="Popular routes">
+        <h2 class="ftr__h">Routes</h2>
+        <ul>
+          {featured.map((d) => <li><a href={`/routes/${d.slug}`}>Norwich to {d.name}</a></li>)}
+          <li><a href="/routes" class="amber">All {destinations.length} destinations</a></li>
+        </ul>
+      </nav>
+      <nav aria-label="Services">
+        <h2 class="ftr__h">Services</h2>
+        <ul>
+          <li><a href="/services/chauffeur">Executive chauffeur</a></li>
+          <li><a href="/services/airport-transfers">Airport transfers</a></li>
+          <li><a href="/services/secure-courier">Secure courier</a></li>
+          <li><a href="/services/long-distance">Long-distance runs</a></li>
+          <li><a href="/fleet">The fleet</a></li>
+        </ul>
+      </nav>
+      <nav aria-label="Company">
+        <h2 class="ftr__h">Company</h2>
+        <ul>
+          <li><a href="/about">The Terms</a></li>
+          <li><a href="/contact">Contact and booking</a></li>
+          <li><a href="/privacy">Privacy</a></li>
+          <li><a href="/cookies">Cookie policy</a></li>
+          <li><a href="/terms">Terms of carriage</a></li>
+          <li><button type="button" class="linkbtn" data-cookie-settings>Cookie settings</button></li>
+        </ul>
+      </nav>
+    </div>
+    <div class="ftr__base mono">
+      <span>&copy; {year} {site.legalName}</span>
+      <span>Prices are estimates until confirmed. Fixed once booked.</span>
+    </div>
+  </div>
+</footer>
+<style>
+  .ftr { border-top: 1px solid var(--rule); padding: 64px 0 32px; background: var(--asphalt); }
+  .ftr__big { font-size: clamp(3rem, 12vw, 11rem); line-height: .85; color: var(--plate); margin: 0 0 56px; max-width: none; }
+  .ftr__big .amber { color: var(--amber-deep); }
+  .ftr__grid { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 40px; }
+  .ftr__nap { font-style: normal; margin: 22px 0 16px; color: var(--steel); line-height: 1.8; font-size: .92rem; }
+  .ftr__h { font: 400 .75rem/1 var(--mono); letter-spacing: .14em; color: var(--amber); margin: 0 0 18px; }
+  .ftr ul { list-style: none; padding: 0; margin: 0; }
+  .ftr li a, .linkbtn { display: inline-block; padding: 6px 0; color: var(--steel); text-decoration: none; font-size: .92rem; }
+  .ftr li a:hover, .linkbtn:hover { color: var(--bone); }
+  .ftr li a.amber { color: var(--amber); }
+  .linkbtn { background: none; border: 0; cursor: pointer; padding: 6px 0; }
+  .small { font-size: .82rem; }
+  .ftr__base { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; border-top: 1px solid var(--rule); margin-top: 56px; padding-top: 22px; font-size: .75rem; color: var(--steel); }
+  @media (max-width: 900px) { .ftr__grid { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 560px) { .ftr__grid { grid-template-columns: 1fr; } }
+</style>

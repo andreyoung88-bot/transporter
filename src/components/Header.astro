@@ -1,0 +1,71 @@
+---
+import Logo from './Logo.astro';
+import Arrow from './Arrow.astro';
+import { site } from '../config/site';
+const path = Astro.url.pathname;
+const nav = [
+  { href: '/routes', label: 'Routes' },
+  { href: '/services/chauffeur', label: 'Chauffeur' },
+  { href: '/services/airport-transfers', label: 'Airports' },
+  { href: '/services/secure-courier', label: 'Courier' },
+  { href: '/fleet', label: 'Fleet' },
+  { href: '/about', label: 'The Terms' },
+];
+---
+<header class="hdr">
+  <div class="wrap hdr__in">
+    <a href="/" class="hdr__brand" aria-label="Wensum Black, home"><Logo /></a>
+    <nav class="hdr__nav" aria-label="Primary" id="primary-nav">
+      <ul>
+        {nav.map((n) => (
+          <li><a href={n.href} aria-current={path.startsWith(n.href) ? 'page' : undefined}>{n.label}</a></li>
+        ))}
+      </ul>
+    </nav>
+    <a class="hdr__tel mono" href={`tel:${site.phone.replace(/\s/g, '')}`}><span class="muted">24/7</span> {site.phoneDisplay}</a>
+    <a class="btn hdr__cta" href="/#estimate">Quote <Arrow /></a>
+    <button class="hdr__toggle" type="button" aria-expanded="false" aria-controls="primary-nav">
+      <span class="sr-only">Menu</span><span class="bars" aria-hidden="true"></span>
+    </button>
+  </div>
+</header>
+<script>
+  const t = document.querySelector<HTMLButtonElement>('.hdr__toggle');
+  const n = document.getElementById('primary-nav');
+  t?.addEventListener('click', () => {
+    const open = t.getAttribute('aria-expanded') !== 'true';
+    t.setAttribute('aria-expanded', String(open));
+    n?.classList.toggle('open', open);
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && t?.getAttribute('aria-expanded') === 'true') { t.click(); t.focus(); }
+  });
+</script>
+<style>
+  .hdr { position: sticky; top: 0; z-index: 50; background: rgba(11, 11, 12, .94); border-bottom: 1px solid var(--rule); }
+  .hdr__in { display: flex; align-items: center; gap: 28px; height: 72px; }
+  .hdr__brand { display: flex; color: var(--bone); flex: none; }
+  .hdr__nav { margin-left: auto; }
+  .hdr__nav ul { display: flex; gap: 26px; list-style: none; margin: 0; padding: 0; }
+  .hdr__nav a { font: 600 1rem/1 var(--display); letter-spacing: .1em; text-transform: uppercase; text-decoration: none; color: var(--steel); padding: 14px 0; display: block; }
+  .hdr__nav a:hover, .hdr__nav a[aria-current] { color: var(--bone); }
+  .hdr__nav a[aria-current] { box-shadow: inset 0 -2px 0 var(--amber); }
+  .hdr__tel { font-size: .85rem; text-decoration: none; white-space: nowrap; }
+  .hdr__cta { min-height: 44px; padding: 0 18px; }
+  .hdr__toggle { display: none; margin-left: auto; width: 48px; height: 48px; background: none; border: 1px solid var(--rule); cursor: pointer; }
+  .bars, .bars::before, .bars::after { display: block; width: 20px; height: 1.5px; background: var(--bone); margin: auto; position: relative; transition: transform .2s; }
+  .bars::before, .bars::after { content: ''; position: absolute; left: 0; }
+  .bars::before { top: -6px; } .bars::after { top: 6px; }
+  [aria-expanded='true'] .bars { background: transparent; }
+  [aria-expanded='true'] .bars::before { transform: translateY(6px) rotate(45deg); }
+  [aria-expanded='true'] .bars::after { transform: translateY(-6px) rotate(-45deg); }
+  @media (max-width: 1080px) { .hdr__tel { display: none; } }
+  @media (max-width: 900px) {
+    .hdr__toggle { display: block; }
+    .hdr__cta { display: none; }
+    .hdr__nav { position: absolute; top: 72px; left: 0; right: 0; background: var(--asphalt); border-bottom: 1px solid var(--rule); display: none; }
+    .hdr__nav.open { display: block; }
+    .hdr__nav ul { flex-direction: column; gap: 0; padding: 8px var(--gutter) 24px; }
+    .hdr__nav a { font-size: 1.6rem; padding: 14px 0; border-bottom: 1px solid var(--rule); }
+  }
+</style>

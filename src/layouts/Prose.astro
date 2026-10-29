@@ -1,0 +1,29 @@
+---
+import Base from './Base.astro';
+import { breadcrumbs } from '../lib/schema';
+interface Props { title: string; description: string; h1: string; eyebrow: string; updated?: string; noindex?: boolean }
+const { title, description, h1, eyebrow, updated, noindex } = Astro.props;
+const base = (Astro.site?.toString() ?? '').replace(/\/$/, '');
+---
+<Base title={title} description={description} noindex={noindex} schema={[breadcrumbs(base, [{ name: 'Home', path: '/' }, { name: h1, path: Astro.url.pathname.replace(/\/$/, '') }])]}>
+  <article class="prose wrap">
+    <header>
+      <p class="eyebrow">{eyebrow}</p>
+      <h1>{h1}</h1>
+      {updated && <p class="mono muted small">Last updated {updated}</p>}
+    </header>
+    <div class="prose__body"><slot /></div>
+  </article>
+</Base>
+<style>
+  .prose { padding-block: 96px; }
+  .prose h1 { font-size: clamp(2.8rem, 7vw, 6rem); margin-bottom: 20px; max-width: 16ch; }
+  .prose__body { max-width: 72ch; margin-top: 56px; }
+  .prose__body :global(h2) { font-size: clamp(1.6rem, 3vw, 2.2rem); margin: 56px 0 16px; }
+  .prose__body :global(h3) { font-size: 1.25rem; margin: 32px 0 10px; }
+  .prose__body :global(p), .prose__body :global(li) { color: #cfcdc7; }
+  .prose__body :global(ul) { padding-left: 1.1em; }
+  .prose__body :global(li) { margin-bottom: 8px; }
+  .prose__body :global(table) { margin: 16px 0 24px; }
+  .small { font-size: .8rem; }
+</style>

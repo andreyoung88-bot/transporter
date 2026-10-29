@@ -1,0 +1,36 @@
+---
+import Base from '../layouts/Base.astro';
+import QuoteForm from '../components/QuoteForm.astro';
+import { site } from '../config/site';
+import { breadcrumbs } from '../lib/schema';
+const base = (Astro.site?.toString() ?? '').replace(/\/$/, '');
+const tel = `tel:${site.phone.replace(/\s/g, '')}`;
+---
+<Base title="Book a Private Driver or Courier from Norwich: Fixed Quote" description="Request a fixed-price quote for a private driver, airport transfer or secure courier from Norwich. We reply within 15 minutes, 24 hours a day." schema={[breadcrumbs(base, [{ name: 'Home', path: '/' }, { name: 'Contact', path: '/contact' }])]}>
+  <section class="ct wrap" aria-labelledby="ct-h">
+    <div class="ct__side">
+      <p class="eyebrow">Dispatch / 24 hours</p>
+      <h1 id="ct-h">Book a run</h1>
+      <p class="lede">Tell us where and when. A fixed fare comes back within 15 minutes, day or night.</p>
+      <dl class="kv ct__kv">
+        <div><dt>Phone</dt><dd><a href={tel}>{site.phoneDisplay}</a></dd></div>
+        <div><dt>WhatsApp</dt><dd><a href={`https://wa.me/${site.whatsapp}`} rel="noopener" target="_blank">Message dispatch<span class="sr-only"> (opens in a new tab)</span></a></dd></div>
+        <div><dt>Email</dt><dd><a href={`mailto:${site.email}`}>{site.email}</a></dd></div>
+        <div><dt>Office</dt><dd>{site.address.street}, {site.address.locality} {site.address.postcode}</dd></div>
+        <div><dt>Hours</dt><dd>24/7, 365 days</dd></div>
+      </dl>
+    </div>
+    <div class="ct__form">
+      <h2 class="sr-only">Quote request form</h2>
+      <QuoteForm />
+    </div>
+  </section>
+</Base>
+<style>
+  .ct { display: grid; grid-template-columns: 1fr 1.5fr; gap: 64px; padding-block: 96px; }
+  .ct h1 { font-size: clamp(3rem, 7vw, 6rem); margin-bottom: 24px; }
+  .ct__kv { margin-top: 40px; }
+  .ct__kv dd { text-align: right; overflow-wrap: anywhere; }
+  .ct__kv a { text-decoration: none; }
+  @media (max-width: 960px) { .ct { grid-template-columns: 1fr; gap: 40px; padding-block: 64px; } }
+</style>

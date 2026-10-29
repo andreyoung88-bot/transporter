@@ -1,0 +1,87 @@
+---
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import ConsentBanner from '../components/ConsentBanner.astro';
+import { site } from '../config/site';
+import { organization, website, graph } from '../lib/schema';
+
+interface Props {
+  title: string;
+  description: string;
+  /** Extra JSON-LD nodes, merged into one @graph with the business and site nodes. */
+  schema?: object[];
+  ogImage?: string;
+  noindex?: boolean;
+  /** Preload an LCP image. */
+  preloadImage?: string;
+}
+const { title, description, schema = [], ogImage = '/og/default.jpg', noindex = false, preloadImage } = Astro.props;
+const base = (Astro.site?.toString() ?? '').replace(/\/$/, '');
+const path = Astro.url.pathname.replace(/\/$/, '') || '/';
+const canonical = base + (path === '/' ? '/' : path);
+const fullTitle = title.includes(site.name) ? title : `${title} | ${site.name}`;
+const og = new URL(ogImage, base + '/').toString();
+const ld = graph(organization(base), website(base), ...schema);
+---
+<!doctype html>
+<html lang="en-GB">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="alternate" hreflang="en-GB" href={canonical} />
+    <link rel="alternate" hreflang="x-default" href={canonical} />
+    {noindex && <meta name="robots" content="noindex, follow" />}
+    <meta name="theme-color" content="#0b0b0c" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <link rel="preload" href="/fonts/barlow-condensed-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/inter-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin />
+    {preloadImage && <link rel="preload" as="image" href={preloadImage} fetchpriority="high" />}
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:locale" content={site.locale} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={og} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={og} />
+    <meta name="geo.region" content="GB-NFK" />
+    <meta name="geo.placename" content="Norwich" />
+    <meta name="geo.position" content={`${site.geo.lat};${site.geo.lon}`} />
+    <script is:inline>
+      document.documentElement.classList.add('js');
+      window.dataLayer = window.dataLayer || [];
+      function gtag() { dataLayer.push(arguments); }
+      gtag('consent', 'default', { ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied', analytics_storage: 'denied', wait_for_update: 500 });
+    </script>
+    <script type="application/ld+json" set:html={ld} />
+    <slot name="head" />
+  </head>
+  <body class="grain">
+    <a class="skip" href="#main">Skip to content</a>
+    <Header />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer />
+    <ConsentBanner />
+    <script>
+      const io = new IntersectionObserver(
+        (es) => es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }),
+        { rootMargin: '0px 0px -8% 0px' },
+      );
+      document.querySelectorAll('[data-reveal]').forEach((el) => io.observe(el));
+    </script>
+  </body>
+</html>

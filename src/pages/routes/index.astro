@@ -1,0 +1,111 @@
+---
+import Base from '../../layouts/Base.astro';
+import RouteMap from '../../components/RouteMap.astro';
+import { allRoutes, REGION_ORDER, REGION_NOTES, regionSlug } from '../../lib/routes';
+import { breadcrumbs } from '../../lib/schema';
+import { gbp } from '../../lib/price';
+
+const routes = allRoutes();
+const groups = REGION_ORDER.map((g) => ({ g, items: routes.filter((r) => r.d.region === g) })).filter((x) => x.items.length);
+const base = (Astro.site?.toString() ?? '').replace(/\/$/, '');
+const itemList = {
+  '@type': 'ItemList',
+  name: 'Routes from Norwich',
+  numberOfItems: routes.length,
+  itemListElement: routes.map((r, i) => ({ '@type': 'ListItem', position: i + 1, url: `${base}/routes/${r.d.slug}`, name: `Norwich to ${r.d.name}` })),
+};
+---
+<Base
+  title={`All Routes from Norwich: ${routes.length} UK Destinations with Prices`}
+  description={`Fixed-price private driver and secure courier routes from Norwich to ${routes.length} UK cities, airports and ports, with distances, drive times and prices for each.`}
+  schema={[breadcrumbs(base, [{ name: 'Home', path: '/' }, { name: 'Routes', path: '/routes' }]), itemList]}
+>
+  <section class="ri" aria-labelledby="ri-h">
+    <div class="wrap ri__grid">
+      <div class="ri__copy">
+        <p class="eyebrow">Route index / {routes.length} destinations</p>
+        <h1 id="ri-h">Every route from Norwich</h1>
+        <p class="lede">Choose a destination for its distance, drive time, fixed-price guide by vehicle and the usual drop-off points. Not on the list? We go there too. <a href="/contact">Ask dispatch</a>.</p>
+        <div class="ri__filter">
+          <label for="ri-q" class="mono">Filter destinations</label>
+          <input id="ri-q" type="search" placeholder="Heathrow, Leeds, Dover…" autocomplete="off" aria-controls="ri-list" />
+          <p class="mono muted" id="ri-count" aria-live="polite"></p>
+        </div>
+        <nav aria-label="Regions" class="ri__regions mono">
+          {groups.map(({ g, items }) => <a href={`#${regionSlug(g)}`}>{g} <span class="muted">{items.length}</span></a>)}
+        </nav>
+      </div>
+      <RouteMap class="ri__map" targets={routes.map((r) => ({ ...r.d }))} title={`Map of all ${routes.length} destinations served from Norwich`} labels={false} />
+    </div>
+  </section>
+
+  <div class="wrap" id="ri-list">
+    {groups.map(({ g, items }) => (
+      <section class="reg" id={regionSlug(g)} aria-labelledby={`${regionSlug(g)}-h`} data-region>
+        <div class="reg__head">
+          <h2 id={`${regionSlug(g)}-h`}>{g}</h2>
+          <p class="muted">{REGION_NOTES[g]}</p>
+        </div>
+        <ul class="reg__list">
+          {items.map((r) => (
+            <li data-name={`${r.d.name} ${r.d.landmarks.join(' ')}`.toLowerCase()}>
+              <a href={`/routes/${r.d.slug}`}>
+                <span class="reg__n">{r.d.name}</span>
+                <span class="reg__m mono">{r.d.type} / {r.miles} mi / {r.duration}</span>
+                <span class="reg__p mono">from {gbp(r.from)}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))}
+  </div>
+</Base>
+<script>
+  const q = document.getElementById('ri-q') as HTMLInputElement | null;
+  const count = document.getElementById('ri-count')!;
+  const items = [...document.querySelectorAll<HTMLElement>('[data-name]')];
+  const regions = [...document.querySelectorAll<HTMLElement>('[data-region]')];
+  q?.addEventListener('input', () => {
+    const v = q.value.trim().toLowerCase();
+    let n = 0;
+    items.forEach((li) => { const hit = !v || li.dataset.name!.includes(v); li.hidden = !hit; if (hit) n++; });
+    regions.forEach((s) => { s.hidden = !s.querySelector('[data-name]:not([hidden])'); });
+    count.textContent = v ? `${n} match${n === 1 ? '' : 'es'}` : '';
+  });
+</script>
+<style>
+  .ri { border-bottom: 1px solid var(--rule); }
+  .ri__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; }
+  .ri__copy { padding-block: 72px; }
+  .ri h1 { font-size: clamp(3rem, 7vw, 6.6rem); margin-bottom: 28px; }
+  .ri__map { max-height: 760px; aspect-ratio: 2 / 3; justify-self: center; width: 100%; }
+  .ri__filter { margin: 40px 0 32px; display: grid; gap: 10px; max-width: 520px; }
+  .ri__filter label { font-size: .72rem; letter-spacing: .12em; text-transform: uppercase; color: var(--steel); }
+  .ri__filter input { min-height: 56px; background: var(--gunmetal); border: 1px solid var(--rule); padding: 0 18px; font-size: 1.1rem; width: 100%; }
+  .ri__filter input:focus { border-color: var(--amber); }
+  .ri__filter p { margin: 0; font-size: .8rem; min-height: 1.2em; }
+  .ri__regions { display: flex; flex-wrap: wrap; gap: 8px; font-size: .78rem; }
+  .ri__regions a { border: 1px solid var(--rule); padding: 10px 12px; text-decoration: none; }
+  .ri__regions a:hover { border-color: var(--amber); }
+  .reg { display: grid; grid-template-columns: 1fr 2.2fr; gap: 48px; padding-block: 64px; border-bottom: 1px solid var(--rule); scroll-margin-top: 72px; }
+  .reg[hidden] { display: none; }
+  .reg__head h2 { font-size: clamp(2rem, 3.6vw, 3rem); margin-bottom: 18px; }
+  .reg__head p { font-size: .92rem; }
+  .reg__list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid var(--rule); }
+  .reg__list li { border-bottom: 1px solid var(--rule); }
+  .reg__list li:nth-child(odd) { border-right: 1px solid var(--rule); }
+  .reg__list a { display: grid; grid-template-columns: 1fr auto; gap: 4px 16px; padding: 18px 16px; text-decoration: none; }
+  .reg__list a:hover { background: var(--gunmetal); color: inherit; }
+  .reg__n { font: 600 1.35rem/1.05 var(--display); text-transform: uppercase; letter-spacing: .03em; }
+  .reg__list a:hover .reg__n { color: var(--amber); }
+  .reg__m { grid-column: 1; font-size: .72rem; color: var(--steel); text-transform: uppercase; letter-spacing: .06em; }
+  .reg__p { grid-row: 1 / span 2; grid-column: 2; align-self: center; font-size: .85rem; color: var(--amber); }
+  @media (max-width: 960px) {
+    .ri__grid, .reg { grid-template-columns: 1fr; }
+    .ri__copy { padding-bottom: 24px; }
+    .ri__map { max-height: 520px; }
+    .reg { gap: 24px; }
+  }
+  @media (max-width: 600px) { .reg__list { grid-template-columns: 1fr; } .reg__list li:nth-child(odd) { border-right: 0; } }
+</style>

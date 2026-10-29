@@ -1,0 +1,53 @@
+---
+import Base from '../layouts/Base.astro';
+import CarProfile from '../components/CarProfile.astro';
+import Arrow from '../components/Arrow.astro';
+import { vehicles, pricing } from '../config/pricing';
+import { breadcrumbs } from '../lib/schema';
+const base = (Astro.site?.toString() ?? '').replace(/\/$/, '');
+const specs: Record<string, { length: string; features: string[] }> = {
+  executive: { length: '4.95 M', features: ['Leather rear bench, climate control', 'Wi-Fi, USB-C and wireless charging', 'Privacy glass', 'Bottled water, phone chargers'] },
+  luxury: { length: '5.29 M', features: ['Long-wheelbase rear seats that recline', 'Rear blinds and separate climate control', 'Quietest cabin in the fleet', 'Best for runs over three hours'] },
+  mpv: { length: '5.14 M', features: ['Seven seats, three rows', 'Room for six large cases, skis or golf bags', 'Conference seating on request', 'Child seats on request'] },
+  courier: { length: '4.93 M', features: ['Unmarked, no livery', 'Live GPS tracking', 'Lockable load area', 'Photo and signature proof of delivery'] },
+};
+---
+<Base title="Fleet: Black Mercedes Saloons, V-Class and Secure Courier" description="The Wensum Black fleet: Mercedes E-Class and S-Class saloons, V-Class MPVs and unmarked secure courier estates. Specifications, capacity and per-mile rates." schema={[breadcrumbs(base, [{ name: 'Home', path: '/' }, { name: 'Fleet', path: '/fleet' }])]}>
+  <section class="fl wrap" aria-labelledby="fl-h">
+    <p class="eyebrow">Fleet / {vehicles.length} classes</p>
+    <h1 id="fl-h">The fleet</h1>
+    <p class="lede">All black, all late-model, all serviced on schedule and valeted before each run. No branding on the outside, by design.</p>
+    <ul class="fl__list">
+      {vehicles.map((v, i) => (
+        <li class="fl__item">
+          <div class="fl__draw"><span class="mono fl__idx">{String(i + 1).padStart(2, '0')}</span><CarProfile kind={v.id} length={specs[v.id].length} /></div>
+          <div class="fl__body">
+            <h2>{v.name}</h2>
+            <p class="mono muted">{v.model}</p>
+            <p>{v.summary}</p>
+            <ul class="fl__feat">{specs[v.id].features.map((f) => <li>{f}</li>)}</ul>
+            <dl class="kv">
+              <div><dt>Rate</dt><dd>£{v.perMile.toFixed(2)} per mile</dd></div>
+              <div><dt>Minimum fare</dt><dd>£{pricing.minimumFare}</dd></div>
+              <div><dt>Capacity</dt><dd>{v.seats ? `${v.seats} passengers / ${v.bags} cases` : 'Up to 300 kg'}</dd></div>
+            </dl>
+          </div>
+        </li>
+      ))}
+    </ul>
+    <p><a class="btn" href="/#estimate">Estimate a fare <Arrow /></a></p>
+  </section>
+</Base>
+<style>
+  .fl { padding-block: 96px; }
+  .fl h1 { font-size: clamp(3rem, 8vw, 7rem); margin-bottom: 24px; }
+  .fl__list { list-style: none; margin: 64px 0; padding: 0; border-top: 1px solid var(--rule); }
+  .fl__item { display: grid; grid-template-columns: 1.2fr 1fr; gap: 56px; padding-block: 56px; border-bottom: 1px solid var(--rule); }
+  .fl__draw { position: relative; background: var(--gunmetal); border: 1px solid var(--rule); padding: 48px 32px 32px; background-image: linear-gradient(var(--rule) 1px, transparent 1px), linear-gradient(90deg, var(--rule) 1px, transparent 1px); background-size: 32px 32px; background-position: -1px -1px; }
+  .fl__idx { position: absolute; top: 14px; left: 16px; font-size: .75rem; color: var(--amber); }
+  .fl__body h2 { font-size: clamp(2rem, 4vw, 3rem); margin-bottom: 8px; }
+  .fl__feat { margin: 20px 0 28px; padding: 0; list-style: none; }
+  .fl__feat li { padding: 8px 0 8px 22px; position: relative; color: var(--steel); }
+  .fl__feat li::before { content: ''; position: absolute; left: 0; top: 18px; width: 10px; height: 1px; background: var(--amber); }
+  @media (max-width: 900px) { .fl__item { grid-template-columns: 1fr; gap: 28px; } }
+</style>

@@ -1,0 +1,23 @@
+---
+import Prose from '../layouts/Prose.astro';
+import { pricing } from '../config/pricing';
+import { site } from '../config/site';
+---
+<Prose title="Terms of Carriage" description="Booking, pricing, waiting, cancellation and liability terms for Wensum Black private hire and secure courier services." h1="Terms of carriage" eyebrow="Legal" updated="29 October 2026">
+  <h2>1. Quotes and fixed fares</h2>
+  <p>Prices on this website are estimates. A booking is confirmed when we send you a written confirmation with a fixed fare. The fixed fare includes fuel, tolls, congestion charges and standard airport drop-off fees.</p>
+  <h2>2. Waiting time</h2>
+  <p>The first {pricing.freeWaitingMinutes} minutes of waiting are free ({pricing.airportFreeWaitingMinutes} minutes after the actual landing time for airport pickups). After that, waiting is charged at £{pricing.waitingPerHour} an hour, pro rata.</p>
+  <h2>3. Changes and cancellation</h2>
+  <p>Cancellation is free up to 24 hours before pickup. Within 24 hours we charge 50% of the fare. If the driver has already set off, the full fare is charged. Changes are free if the new route and time can be covered.</p>
+  <h2>4. Night journeys</h2>
+  <p>Pickups between 22:00 and 06:00 are charged at {Math.round((pricing.nightMultiplier - 1) * 100)}% above the day rate.</p>
+  <h2>5. Courier consignments</h2>
+  <p>You must tell us the nature and value of a consignment when booking. We do not carry illegal items, hazardous goods (unless agreed in writing), cash above £5,000 or live animals unaccompanied. Standard goods-in-transit cover applies unless higher cover is agreed.</p>
+  <h2>6. Conduct</h2>
+  <p>A driver may refuse or end a journey if there is a risk to safety. Smoking and vaping are not allowed in our vehicles. A valeting charge of up to £150 applies if a vehicle is left soiled.</p>
+  <h2>7. Liability</h2>
+  <p>We are not liable for missed flights, trains or appointments caused by events outside our reasonable control. Nothing in these terms limits liability that cannot be limited by law.</p>
+  <h2>8. Operator</h2>
+  <p>{site.legalName}, {site.address.street}, {site.address.locality} {site.address.postcode}, is a licensed private hire operator. These terms are governed by the law of England and Wales.</p>
+</Prose>

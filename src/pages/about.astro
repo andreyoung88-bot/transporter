@@ -1,0 +1,22 @@
+---
+import Prose from '../layouts/Prose.astro';
+import { site } from '../config/site';
+---
+<Prose title="The Terms: How Wensum Black Works" description="Wensum Black is a Norwich private driver and secure courier operator with three rules: fixed prices, total discretion and early arrival. Here is how we keep them." h1="The Terms" eyebrow="About Wensum Black">
+  <p class="lede">Wensum Black is a private hire and secure courier operator based on Tombland in Norwich, named after the river that runs through the city. We started with one idea: some journeys are too important for an app.</p>
+  <h2>Rule one: the price is fixed</h2>
+  <p>We quote by road distance and vehicle class, and the figure we confirm in writing is the figure on the invoice. If the A11 closes or the M25 grinds to a halt, that is our problem. The only things we add are extras you ask for: another stop, more waiting, a change of destination.</p>
+  <h2>Rule two: discretion is total</h2>
+  <p>Our drivers are employed, not freelance. Each one holds a Norwich City Council private hire licence, has passed an enhanced DBS check, has done advanced driver training and has signed a confidentiality agreement. We do not post about clients, we do not name passengers and we do not discuss consignments.</p>
+  <h2>Rule three: we arrive early</h2>
+  <p>We aim to be outside ten minutes before the booked time. Dispatch tracks flights and traffic live and reroutes before a delay reaches you. On long runs, breaks are planned in advance and a second driver is available.</p>
+  <h2>Who we drive for</h2>
+  <ul>
+    <li>Law firms, insurers and finance teams in Norwich and the wider region</li>
+    <li>Executives and visitors to the Norwich Research Park and the University of East Anglia</li>
+    <li>Private clients, families and estates across Norfolk and Suffolk</li>
+    <li>Hospitals and laboratories that need samples or equipment moved directly</li>
+  </ul>
+  <h2>Talk to dispatch</h2>
+  <p>Call <a href={`tel:${site.phone.replace(/\s/g, '')}`}>{site.phoneDisplay}</a>, email <a href={`mailto:${site.email}`}>{site.email}</a>, or <a href="/contact">request a quote</a>.</p>
+</Prose>

@@ -1,0 +1,38 @@
+---
+/** Blueprint-style side elevation. Pure SVG, no image weight. */
+interface Props { kind: 'executive' | 'luxury' | 'mpv' | 'courier'; length: string }
+const { kind, length } = Astro.props;
+const body = {
+  executive: 'M20 88L28 71Q40 64 92 60L140 37Q150 32 170 31H258Q280 32 298 46L328 60Q370 64 380 74L382 88Z',
+  luxury: 'M14 88L22 70Q34 63 88 59L138 35Q148 30 170 29H264Q288 30 306 45L336 59Q378 63 386 74L388 88Z',
+  mpv: 'M18 88L22 52Q26 26 58 24H322Q344 25 356 44L378 64Q384 70 384 88Z',
+  courier: 'M20 88L26 70Q36 62 84 58L132 34Q142 29 162 29H330Q348 30 354 44L370 62Q382 68 382 88Z',
+}[kind];
+const glass = {
+  executive: 'M148 41L172 36H230V58H124Z M238 36H256Q274 38 288 54L292 58H238Z',
+  luxury: 'M146 39L172 34H236V57H122Z M244 34H262Q282 36 296 52L300 57H244Z',
+  mpv: 'M40 32H118V56H34Z M126 32H226V56H126Z M234 32H318Q336 33 346 52H234Z',
+  courier: 'M140 38L164 34H220V56H118Z M228 34H322Q338 36 344 52L346 56H228Z',
+}[kind];
+const wheels = kind === 'luxury' ? [92, 316] : kind === 'mpv' ? [86, 318] : [90, 310];
+---
+<svg class="car" viewBox="0 0 400 130" aria-hidden="true" focusable="false">
+  <path d="M0 106H400" class="car__ground" />
+  <path d={body} class="car__body" />
+  <path d={glass} class="car__glass" />
+  {wheels.map((x) => (
+    <g><circle cx={x} cy="88" r="18" class="car__tyre" /><circle cx={x} cy="88" r="8" class="car__hub" /></g>
+  ))}
+  <path d="M20 120H382M20 114V126M382 114V126" class="car__dim" />
+  <text x="201" y="124" class="car__lbl" text-anchor="middle">{length}</text>
+</svg>
+<style>
+  .car { width: 100%; height: auto; }
+  .car__ground { stroke: var(--rule); stroke-width: 1; }
+  .car__body { fill: var(--asphalt); stroke: var(--bone); stroke-width: 1.2; stroke-linejoin: round; }
+  .car__glass { fill: #20232a; stroke: var(--steel); stroke-width: .8; }
+  .car__tyre { fill: var(--asphalt); stroke: var(--bone); stroke-width: 1.2; }
+  .car__hub { fill: none; stroke: var(--amber); stroke-width: 1; }
+  .car__dim { stroke: var(--amber); stroke-width: .8; fill: none; }
+  .car__lbl { font: 400 9px var(--mono); fill: var(--amber); letter-spacing: .12em; paint-order: stroke; stroke: var(--gunmetal); stroke-width: 6px; }
+</style>

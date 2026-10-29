@@ -1,0 +1,83 @@
+---
+import { site } from '../config/site';
+const gaEnabled = !site.ga4Id.includes('XXXX');
+---
+<section class="cc" id="cc" aria-labelledby="cc-title" hidden>
+  <h2 id="cc-title" class="cc__t">Cookies</h2>
+  <p>We use one essential cookie to remember this choice. With your permission we also use Google Analytics to count visits. Nothing is sold and there's no ad tracking. <a href="/cookies">Cookie policy</a>.</p>
+  <div class="cc__row">
+    <button type="button" class="btn btn--ghost" data-cc="reject">Reject</button>
+    <button type="button" class="btn btn--ghost" data-cc="manage">Settings</button>
+    <button type="button" class="btn" data-cc="accept">Accept</button>
+  </div>
+</section>
+
+<dialog class="ccd" id="ccd" aria-labelledby="ccd-title">
+  <form method="dialog">
+    <h2 id="ccd-title" class="cc__t">Cookie settings</h2>
+    <fieldset>
+      <legend class="sr-only">Cookie categories</legend>
+      <label class="ccd__opt">
+        <input type="checkbox" checked disabled />
+        <span><strong>Strictly necessary</strong><br /><span class="muted">Stores your consent choice (wb_consent, 6 months). Always on.</span></span>
+      </label>
+      <label class="ccd__opt">
+        <input type="checkbox" id="cc-analytics" />
+        <span><strong>Analytics</strong><br /><span class="muted">Google Analytics 4 with IP truncation. Cookies _ga and _ga_*, up to 13 months.</span></span>
+      </label>
+    </fieldset>
+    <div class="cc__row">
+      <button class="btn btn--ghost" value="cancel" formnovalidate>Cancel</button>
+      <button class="btn" value="save" id="cc-save">Save choices</button>
+    </div>
+  </form>
+</dialog>
+
+<script is:inline define:vars={{ gaId: site.ga4Id, gaEnabled }}>
+  (function () {
+    var KEY = 'wb_consent';
+    var banner = document.getElementById('cc');
+    var dlg = document.getElementById('ccd');
+    var box = document.getElementById('cc-analytics');
+    function read() { var m = document.cookie.match(/(?:^|; )wb_consent=([^;]+)/); return m ? m[1] : null; }
+    function write(v) { document.cookie = KEY + '=' + v + '; Max-Age=15552000; Path=/; SameSite=Lax' + (location.protocol === 'https:' ? '; Secure' : ''); }
+    function loadGA() {
+      if (!gaEnabled || window.__ga) return;
+      window.__ga = 1;
+      var s = document.createElement('script');
+      s.async = true; s.src = 'https://www.googletagmanager.com/gtag/js?id=' + gaId;
+      document.head.appendChild(s);
+      gtag('js', new Date()); gtag('config', gaId, { anonymize_ip: true });
+    }
+    function apply(on) {
+      gtag('consent', 'update', { analytics_storage: on ? 'granted' : 'denied' });
+      if (on) loadGA();
+    }
+    function decide(on) { write(on ? 'a1' : 'a0'); apply(on); banner.hidden = true; }
+    var c = read();
+    if (c) apply(c === 'a1'); else banner.hidden = false;
+    document.addEventListener('click', function (e) {
+      var t = e.target.closest('[data-cc],[data-cookie-settings]');
+      if (!t) return;
+      var a = t.getAttribute('data-cc');
+      if (a === 'accept') decide(true);
+      else if (a === 'reject') decide(false);
+      else { box.checked = read() === 'a1'; dlg.showModal(); }
+    });
+    dlg.addEventListener('close', function () { if (dlg.returnValue === 'save') decide(box.checked); });
+  })();
+</script>
+
+<style>
+  .cc { position: fixed; z-index: 80; left: 16px; bottom: 16px; max-width: 440px; width: calc(100% - 32px); background: var(--gunmetal); border: 1px solid var(--rule); border-top: 2px solid var(--amber); padding: 22px 22px 20px; font-size: .9rem; }
+  .cc[hidden] { display: none; }
+  .cc__t { font-size: 1.5rem; margin-bottom: 10px; }
+  .cc p { color: var(--steel); }
+  .cc__row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .cc__row .btn { min-height: 44px; padding: 0 16px; flex: 1; font-size: .95rem; }
+  .ccd { background: var(--gunmetal); color: var(--bone); border: 1px solid var(--rule); border-top: 2px solid var(--amber); padding: 28px; max-width: 520px; width: calc(100% - 32px); }
+  .ccd::backdrop { background: rgba(0, 0, 0, .7); }
+  .ccd fieldset { border: 0; padding: 0; margin: 8px 0 22px; }
+  .ccd__opt { display: grid; grid-template-columns: 22px 1fr; gap: 14px; padding: 16px 0; border-bottom: 1px solid var(--rule); font-size: .92rem; cursor: pointer; }
+  .ccd__opt input { width: 20px; height: 20px; accent-color: var(--amber); margin: 2px 0 0; }
+</style>

@@ -1,0 +1,17 @@
+---
+import Base from '../layouts/Base.astro';
+import Arrow from '../components/Arrow.astro';
+---
+<Base title="Wrong Turn" description="This page does not exist. Find your route from Norwich instead." noindex>
+  <section class="nf wrap">
+    <p class="eyebrow">Error 404 / Off route</p>
+    <h1>Wrong turn.</h1>
+    <p class="lede">This address doesn't exist. The car is still running, so let's get you back on route.</p>
+    <p class="nf__cta"><a class="btn" href="/routes">All routes <Arrow /></a> <a class="btn btn--ghost" href="/">Home</a></p>
+  </section>
+</Base>
+<style>
+  .nf { padding-block: 140px; min-height: 70svh; }
+  .nf h1 { font-size: clamp(4rem, 14vw, 12rem); margin-bottom: 28px; }
+  .nf__cta { display: flex; gap: 12px; flex-wrap: wrap; }
+</style>
