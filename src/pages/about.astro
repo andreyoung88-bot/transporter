@@ -1,8 +1,11 @@
 ---
 import Prose from '../layouts/Prose.astro';
+import Photo from '../components/Photo.astro';
 import { site } from '../config/site';
+import { photos } from '../data/photos';
 ---
 <Prose title="The Terms: How Wensum Black Works" description="Wensum Black is a Norwich private driver and secure courier operator with three rules: fixed prices, total discretion and early arrival. Here is how we keep them." h1="The Terms" eyebrow="About Wensum Black">
+  <figure class="about-photo"><Photo name="norwich" ratio={16 / 9} sizes="(max-width: 800px) 100vw, 72ch" /><figcaption class="mono muted">Norwich. Photo: <a href={photos.norwich.link} rel="noopener">{photos.norwich.credit}</a> / Unsplash</figcaption></figure>
   <p class="lede">Wensum Black is a private hire and secure courier operator based on Tombland in Norwich, named after the river that runs through the city. We started with one idea: some journeys are too important for an app.</p>
   <h2>Rule one: the price is fixed</h2>
   <p>We quote by road distance and vehicle class, and the figure we confirm in writing is the figure on the invoice. If the A11 closes or the M25 grinds to a halt, that is our problem. The only things we add are extras you ask for: another stop, more waiting, a change of destination.</p>
@@ -20,3 +23,8 @@ import { site } from '../config/site';
   <h2>Talk to dispatch</h2>
   <p>Call <a href={`tel:${site.phone.replace(/\s/g, '')}`}>{site.phoneDisplay}</a>, email <a href={`mailto:${site.email}`}>{site.email}</a>, or <a href="/contact">request a quote</a>.</p>
 </Prose>
+
+<style>
+  .about-photo { margin: 0 0 40px; }
+  .about-photo figcaption { font-size: .7rem; letter-spacing: .08em; margin-top: 10px; }
+</style>

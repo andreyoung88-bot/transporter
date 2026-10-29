@@ -6,6 +6,7 @@ import Estimator from '../components/Estimator.astro';
 import Departures from '../components/Departures.astro';
 import Faq from '../components/Faq.astro';
 import CarProfile from '../components/CarProfile.astro';
+import Photo from '../components/Photo.astro';
 import { allRoutes } from '../lib/routes';
 import { vehicles, pricing } from '../config/pricing';
 import { site } from '../config/site';
@@ -96,10 +97,10 @@ const faqs = [
         <p class="lede muted">The same standard on every run: one vetted driver, a clean black car, direct routing and a dispatcher watching the job from start to finish.</p>
       </div>
       <ul class="svc">
-        <li data-reveal><a href="/services/chauffeur"><span class="svc__k mono">A / Chauffeur</span><h3>Executive chauffeur</h3><p>Board meetings, roadshows, events and days out, driven by someone who knows when to say nothing.</p><span class="svc__go">From £{vehicles[0].perMile.toFixed(2)}/mi <Arrow /></span></a></li>
-        <li data-reveal><a href="/services/airport-transfers"><span class="svc__k mono">B / Airports</span><h3>Airport transfers</h3><p>Heathrow, Stansted, Gatwick and every UK airport. Flights tracked, {pricing.airportFreeWaitingMinutes} minutes free after landing.</p><span class="svc__go">Flight tracked <Arrow /></span></a></li>
-        <li data-reveal><a href="/services/secure-courier"><span class="svc__k mono">C / Courier</span><h3>Secure courier</h3><p>One consignment, one car, driven direct. Hand to hand, against a signature, with photo proof.</p><span class="svc__go">Same day <Arrow /></span></a></li>
-        <li data-reveal><a href="/services/long-distance"><span class="svc__k mono">D / Distance</span><h3>Long-distance runs</h3><p>Edinburgh by lunch, Cornwall by dinner, Belfast via the ferry. Planned breaks and a second driver if needed.</p><span class="svc__go">UK wide <Arrow /></span></a></li>
+        <li data-reveal><a href="/services/chauffeur"><Photo name="chauffeur" ratio={3 / 2} sizes="(max-width: 560px) 100vw, (max-width: 1080px) 50vw, 25vw" /><span class="svc__k mono">A / Chauffeur</span><h3>Executive chauffeur</h3><p>Board meetings, roadshows, events and days out, driven by someone who knows when to say nothing.</p><span class="svc__go">From £{vehicles[0].perMile.toFixed(2)}/mi <Arrow /></span></a></li>
+        <li data-reveal><a href="/services/airport-transfers"><Photo name="airport-transfers" ratio={3 / 2} sizes="(max-width: 560px) 100vw, (max-width: 1080px) 50vw, 25vw" /><span class="svc__k mono">B / Airports</span><h3>Airport transfers</h3><p>Heathrow, Stansted, Gatwick and every UK airport. Flights tracked, {pricing.airportFreeWaitingMinutes} minutes free after landing.</p><span class="svc__go">Flight tracked <Arrow /></span></a></li>
+        <li data-reveal><a href="/services/secure-courier"><Photo name="secure-courier" ratio={3 / 2} sizes="(max-width: 560px) 100vw, (max-width: 1080px) 50vw, 25vw" /><span class="svc__k mono">C / Courier</span><h3>Secure courier</h3><p>One consignment, one car, driven direct. Hand to hand, against a signature, with photo proof.</p><span class="svc__go">Same day <Arrow /></span></a></li>
+        <li data-reveal><a href="/services/long-distance"><Photo name="long-distance" ratio={3 / 2} sizes="(max-width: 560px) 100vw, (max-width: 1080px) 50vw, 25vw" /><span class="svc__k mono">D / Distance</span><h3>Long-distance runs</h3><p>Edinburgh by lunch, Cornwall by dinner, Belfast via the ferry. Planned breaks and a second driver if needed.</p><span class="svc__go">UK wide <Arrow /></span></a></li>
       </ul>
     </div>
   </section>
@@ -219,6 +220,8 @@ const faqs = [
   .svc__k { font-size: .7rem; letter-spacing: .14em; text-transform: uppercase; color: var(--steel); }
   .svc p { color: var(--steel); font-size: .95rem; margin: 0; }
   .svc__go { margin-top: auto; padding-top: 28px; display: flex; justify-content: space-between; align-items: center; font: 400 .78rem var(--mono); color: var(--amber); }
+  .svc :global(.photo) { margin: -28px -24px 6px; width: calc(100% + 48px); max-width: none; }
+  .svc a:hover :global(.photo) { filter: none; }
   .svc a:hover h3 { color: var(--amber); }
 
   .more { margin: 32px 0 0; }

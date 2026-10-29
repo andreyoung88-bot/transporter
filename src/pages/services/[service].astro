@@ -3,6 +3,8 @@ import Base from '../../layouts/Base.astro';
 import Arrow from '../../components/Arrow.astro';
 import Departures from '../../components/Departures.astro';
 import Faq from '../../components/Faq.astro';
+import Photo from '../../components/Photo.astro';
+import { photos, type PhotoKey } from '../../data/photos';
 import { services, type Service } from '../../data/services';
 import { allRoutes } from '../../lib/routes';
 import { breadcrumbs, faq } from '../../lib/schema';
@@ -25,6 +27,7 @@ const answer = s.answer.replace(/\{([a-z-]+)\.(duration|miles|from)\}/g, (_, slu
   if (!r) throw new Error(`Unknown route token ${slug} in service ${s.slug}`);
   return k === 'from' ? `£${r.from}` : k === 'miles' ? `${r.miles} miles` : r.duration;
 });
+const photo = photos[s.slug as PhotoKey];
 const others = services.filter((x) => x.slug !== s.slug);
 ---
 <Base title={s.title} description={s.description} schema={schema}>
@@ -41,6 +44,12 @@ const others = services.filter((x) => x.slug !== s.slug);
       </div>
     </div>
   </section>
+  {photo && (
+    <figure class="hero-photo wrap">
+      <Photo name={s.slug as PhotoKey} ratio={21 / 9} sizes="(max-width: 1200px) 100vw, 1200px" eager />
+      <figcaption class="mono muted">Photo: <a href={photo.link} rel="noopener">{photo.credit}</a> / Unsplash</figcaption>
+    </figure>
+  )}
   <section class="section" aria-labelledby="pts-h">
     <div class="wrap">
       <h2 id="pts-h" class="sr-only">What is included</h2>
@@ -72,6 +81,8 @@ const others = services.filter((x) => x.slug !== s.slug);
   .sh h1 { max-width: 14ch; margin-bottom: 40px; }
   .sh__row { display: grid; grid-template-columns: 1.6fr 1fr; gap: 48px; align-items: end; }
   .sh__cta { display: flex; gap: 12px; flex-wrap: wrap; justify-content: flex-end; }
+  .hero-photo { margin: 48px auto 0; }
+  .hero-photo figcaption { font-size: .7rem; letter-spacing: .08em; margin-top: 10px; text-align: right; }
   .pts { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid var(--rule); }
   .pts li { padding: 28px 24px 0 0; }
   .pts li + li { border-left: 1px solid var(--rule); padding-left: 24px; }
