@@ -33,7 +33,7 @@ const faqs = [
 ];
 ---
 <Base
-  title="Wensum Black | Private Driver and Secure Courier from Norwich to Anywhere in the UK"
+  title="Private Driver and Secure Courier from Norwich | Wensum Black"
   description={`Discreet chauffeur, airport transfers and same-day secure courier from Norwich to ${destinations.length} UK cities, airports and ports. Fixed fares, vetted drivers, 24/7 dispatch.`}
   schema={[faq(faqs)]}
 >
@@ -182,10 +182,10 @@ const faqs = [
 
 <style>
   .hero { position: relative; min-height: min(100svh, 980px); display: flex; align-items: flex-end; overflow: hidden; border-bottom: 1px solid var(--rule); }
-  .hero__scene { position: absolute; inset: 0 0 0 30%; }
+  .hero :global(.hero__scene) { position: absolute; inset: 0 0 0 30%; }
   .hero::before { content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none; background: linear-gradient(90deg, var(--asphalt) 18%, rgba(11, 11, 12, .6) 48%, rgba(11, 11, 12, 0) 75%), linear-gradient(0deg, var(--asphalt) 0, rgba(11, 11, 12, 0) 30%); }
   .hero__in { position: relative; z-index: 2; padding-block: 140px 56px; }
-  .hero h1 { max-width: 11ch; margin-bottom: 28px; }
+  .hero h1 { max-width: 12ch; margin-bottom: 28px; }
   .hero .lede { margin-bottom: 36px; }
   .hero__cta { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 72px; }
   .hero__stats { display: grid; grid-template-columns: repeat(4, minmax(0, 180px)); border-top: 1px solid var(--rule); margin: 0; }
@@ -255,8 +255,9 @@ const faqs = [
     .how__list { grid-template-columns: 1fr 1fr; row-gap: 40px; }
   }
   @media (max-width: 860px) {
-    .hero__scene { inset: 0; opacity: .55; }
-    .hero::before { background: linear-gradient(0deg, var(--asphalt) 35%, rgba(11, 11, 12, .3) 80%); }
+    .hero :global(.hero__scene) { inset: 0 0 38% 0; opacity: .9; }
+    .hero::before { background: linear-gradient(0deg, var(--asphalt) 42%, rgba(11, 11, 12, .55) 62%, rgba(11, 11, 12, 0) 85%); }
+    .hero__in { padding-top: 46svh; }
     .hero__stats { grid-template-columns: 1fr 1fr; }
     .split { grid-template-columns: 1fr; gap: 20px; }
     .terms__list { grid-template-columns: 1fr; }

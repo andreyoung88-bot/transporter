@@ -20,7 +20,8 @@ const { title, description, schema = [], ogImage = '/og/default.jpg', noindex = 
 const base = (Astro.site?.toString() ?? '').replace(/\/$/, '');
 const path = Astro.url.pathname.replace(/\/$/, '') || '/';
 const canonical = base + (path === '/' ? '/' : path);
-const fullTitle = title.includes(site.name) ? title : `${title} | ${site.name}`;
+// Append the brand only when it fits in the ~62 characters search results show.
+const fullTitle = title.includes(site.name) || title.length > 47 ? title : `${title} | ${site.name}`;
 const og = new URL(ogImage, base + '/').toString();
 const ld = graph(organization(base), website(base), ...schema);
 ---

@@ -75,6 +75,13 @@ const gaEnabled = !site.ga4Id.includes('XXXX');
   .cc p { color: var(--steel); }
   .cc__row { display: flex; gap: 8px; flex-wrap: wrap; }
   .cc__row .btn { min-height: 44px; padding: 0 16px; flex: 1; font-size: .95rem; }
+  @media (max-width: 600px) {
+    .cc { left: 0; bottom: 0; width: 100%; max-width: none; border-left: 0; border-right: 0; border-bottom: 0; padding: 14px 16px 16px; font-size: .8rem; }
+    .cc__t { font-size: 1.1rem; margin-bottom: 6px; }
+    .cc p { margin-bottom: 12px; line-height: 1.5; }
+    .cc__row { flex-wrap: nowrap; gap: 6px; }
+    .cc__row .btn { padding: 0 8px; font-size: .85rem; letter-spacing: .04em; }
+  }
   .ccd { background: var(--gunmetal); color: var(--bone); border: 1px solid var(--rule); border-top: 2px solid var(--amber); padding: 28px; max-width: 520px; width: calc(100% - 32px); }
   .ccd::backdrop { background: rgba(0, 0, 0, .7); }
   .ccd fieldset { border: 0; padding: 0; margin: 8px 0 22px; }

@@ -1,7 +1,8 @@
 ---
 /**
  * Static SVG map first (zero JS, instant paint), upgraded to the three.js
- * scene on first interaction or when the browser is idle. Skipped for
+ * scene on the first pointer move, touch, scroll or key press, which keeps
+ * the main thread free during load. Skipped for
  * reduced motion, Save-Data and devices without WebGL.
  */
 import RouteMap from './RouteMap.astro';
@@ -44,17 +45,15 @@ const { routes, focus, title } = Astro.props;
       });
     };
     ['pointermove', 'touchstart', 'scroll', 'keydown', 'wheel'].forEach((ev) => addEventListener(ev, start, { once: true, passive: true }));
-    // Idle fallback for visitors who just watch.
-    addEventListener('load', () => setTimeout(() => ('requestIdleCallback' in window ? requestIdleCallback(start) : start()), 6000));
   }
 </script>
 <style>
   .s3d { position: relative; overflow: hidden; }
-  .s3d__poster, .s3d__canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
-  .s3d__poster { transition: opacity 1.2s ease; }
+  .s3d :global(.s3d__poster), .s3d__canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .s3d :global(.s3d__poster) { transition: opacity 1.2s ease; }
   .s3d__canvas { opacity: 0; transition: opacity 1.2s ease; }
   .s3d.is-live .s3d__canvas { opacity: 1; }
-  .s3d.is-live .s3d__poster { opacity: 0; }
+  .s3d.is-live :global(.s3d__poster) { opacity: 0; }
   .s3d__tag { position: absolute; right: 12px; bottom: 12px; font-size: .68rem; letter-spacing: .14em; text-transform: uppercase; color: var(--steel); opacity: 0; transition: opacity .6s 1s; }
   .s3d.is-live .s3d__tag { opacity: 1; }
 </style>

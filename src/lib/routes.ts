@@ -21,12 +21,16 @@ export interface RouteInfo {
   h1: string;
 }
 
-/** Trust the researched road distance unless it disagrees wildly with the geometry. */
+/**
+ * Trust the researched road distance unless it disagrees wildly with the
+ * geometry. The upper bound is generous: Kent runs detour round the Thames
+ * estuary and can be 1.6x the straight-line model.
+ */
 export function roadMiles(d: Destination): number {
   const model = modelRoadMiles(d);
   if (!d.roadMiles) return Math.round(model);
   const ratio = d.roadMiles / model;
-  return Math.round(ratio > 0.75 && ratio < 1.3 ? d.roadMiles : model);
+  return Math.round(ratio > 0.75 && ratio < 1.65 ? d.roadMiles : model);
 }
 
 /** Small stable hash, so copy variants are fixed per page between builds. */
@@ -35,6 +39,9 @@ const pick = <T,>(slug: string, salt: number, arr: T[]): T => {
   for (const c of slug) h = (h * 31 + c.charCodeAt(0)) >>> 0;
   return arr[h % arr.length];
 };
+
+/** First candidate that fits the length budget, else the shortest. */
+const fit = (max: number, xs: string[]) => xs.find((x) => x.length <= max) ?? xs[xs.length - 1];
 
 const list = (xs: string[]) => (xs.length < 2 ? xs.join('') : `${xs.slice(0, -1).join(', ')} and ${xs[xs.length - 1]}`);
 
@@ -107,10 +114,26 @@ export function routeInfo(d: Destination): RouteInfo {
   ];
 
   const h1 = airport ? `Norwich to ${d.name} transfers` : d.type === 'port' ? `Norwich to ${d.name}` : `Norwich to ${d.name} private driver`;
-  const title = airport
-    ? `Norwich to ${d.name} Transfer: from ${gbp(exec.low)}, Fixed Price`
-    : `Norwich to ${d.name} Chauffeur and Courier: from ${gbp(exec.low)}`;
-  const description = `Private car from Norwich to ${d.name}: ${miles} miles, about ${duration}. Executive from ${gbp(exec.low)}, MPV and same-day secure courier. Fixed price, 24/7, vetted drivers.`;
+  const fp = gbp(exec.low);
+  const title = fit(62, airport
+    ? [
+        `Norwich to ${d.name} Transfer from ${fp}, Fixed Price | Wensum Black`,
+        `Norwich to ${d.name} Transfer from ${fp} | Wensum Black`,
+        `Norwich to ${d.name} Transfers from ${fp}`,
+        `Norwich to ${d.name}: from ${fp}`,
+      ]
+    : [
+        `Norwich to ${d.name} Chauffeur and Courier from ${fp} | Wensum Black`,
+        `Norwich to ${d.name} Private Driver from ${fp} | Wensum Black`,
+        `Norwich to ${d.name} Driver from ${fp} | Wensum Black`,
+        `Norwich to ${d.name} Private Driver from ${fp}`,
+        `Norwich to ${d.name} from ${fp}`,
+      ]);
+  const description = fit(160, [
+    `Private car from Norwich to ${d.name}: ${miles} miles, about ${duration}. Executive from ${fp}, MPV and same-day secure courier. Fixed price, 24/7, vetted drivers.`,
+    `Private car from Norwich to ${d.name}: ${miles} miles, about ${duration}. Executive from ${fp}, MPV and same-day courier. Fixed price, 24/7.`,
+    `Norwich to ${d.name}: ${miles} miles, about ${duration}. Executive car from ${fp}, MPV and secure courier. Fixed price, 24/7.`,
+  ]);
 
   return { d, miles, minutes, duration, direction, prices, from: exec.low, courierFrom: courier.low, nearby, answer, faqs, title, description, h1 };
 }

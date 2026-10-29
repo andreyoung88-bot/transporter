@@ -16,7 +16,7 @@ const itemList = {
 };
 ---
 <Base
-  title={`All Routes from Norwich: ${routes.length} UK Destinations with Prices`}
+  title={`All Routes from Norwich: ${routes.length} UK Destinations`}
   description={`Fixed-price private driver and secure courier routes from Norwich to ${routes.length} UK cities, airports and ports, with distances, drive times and prices for each.`}
   schema={[breadcrumbs(base, [{ name: 'Home', path: '/' }, { name: 'Routes', path: '/routes' }]), itemList]}
 >
@@ -79,7 +79,7 @@ const itemList = {
   .ri__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; }
   .ri__copy { padding-block: 72px; }
   .ri h1 { font-size: clamp(3rem, 7vw, 6.6rem); margin-bottom: 28px; }
-  .ri__map { max-height: 760px; aspect-ratio: 2 / 3; justify-self: center; width: 100%; }
+  .ri__grid :global(.ri__map) { max-height: 760px; aspect-ratio: 2 / 3; justify-self: center; width: 100%; }
   .ri__filter { margin: 40px 0 32px; display: grid; gap: 10px; max-width: 520px; }
   .ri__filter label { font-size: .72rem; letter-spacing: .12em; text-transform: uppercase; color: var(--steel); }
   .ri__filter input { min-height: 56px; background: var(--gunmetal); border: 1px solid var(--rule); padding: 0 18px; font-size: 1.1rem; width: 100%; }
@@ -104,7 +104,7 @@ const itemList = {
   @media (max-width: 960px) {
     .ri__grid, .reg { grid-template-columns: 1fr; }
     .ri__copy { padding-bottom: 24px; }
-    .ri__map { max-height: 520px; }
+    .ri__grid :global(.ri__map) { max-height: 520px; }
     .reg { gap: 24px; }
   }
   @media (max-width: 600px) { .reg__list { grid-template-columns: 1fr; } .reg__list li:nth-child(odd) { border-right: 0; } }

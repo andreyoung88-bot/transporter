@@ -44,6 +44,6 @@ for (const f of files) {
 }
 console.log(`${files.length} pages audited`);
 const uniq = [...new Set(problems)];
-uniq.slice(0, 80).forEach((p) => console.log(' -', p));
+uniq.slice(0, Number(process.env.MAX ?? 80)).forEach((p) => console.log(' -', p));
 console.log(uniq.length ? `${uniq.length} problems` : 'no problems');
 process.exit(uniq.length ? 1 : 0);

@@ -6,7 +6,7 @@ import { breadcrumbs } from '../lib/schema';
 const base = (Astro.site?.toString() ?? '').replace(/\/$/, '');
 const tel = `tel:${site.phone.replace(/\s/g, '')}`;
 ---
-<Base title="Book a Private Driver or Courier from Norwich: Fixed Quote" description="Request a fixed-price quote for a private driver, airport transfer or secure courier from Norwich. We reply within 15 minutes, 24 hours a day." schema={[breadcrumbs(base, [{ name: 'Home', path: '/' }, { name: 'Contact', path: '/contact' }])]}>
+<Base title="Book a Driver or Courier from Norwich" description="Request a fixed-price quote for a private driver, airport transfer or secure courier from Norwich. We reply within 15 minutes, 24 hours a day." schema={[breadcrumbs(base, [{ name: 'Home', path: '/' }, { name: 'Contact', path: '/contact' }])]}>
   <section class="ct wrap" aria-labelledby="ct-h">
     <div class="ct__side">
       <p class="eyebrow">Dispatch / 24 hours</p>

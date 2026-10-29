@@ -28,8 +28,8 @@ const { routes, caption = 'Departures from Norwich' } = Astro.props;
 <style>
   .dep { border: 1px solid var(--rule); background: var(--gunmetal); overflow-x: auto; }
   .dep__t { width: 100%; border-collapse: collapse; }
-  .dep__cap { text-align: left; padding: 16px 20px; font-size: .72rem; letter-spacing: .16em; text-transform: uppercase; color: var(--amber); border-bottom: 1px solid var(--rule); display: flex; gap: 10px; align-items: center; }
-  .dep__dot { width: 8px; height: 8px; background: var(--amber); animation: blink 1.6s steps(2, start) infinite; }
+  .dep__cap { caption-side: top; text-align: left; padding: 16px 20px; font-size: .72rem; letter-spacing: .16em; text-transform: uppercase; color: var(--amber); border-bottom: 1px solid var(--rule); }
+  .dep__dot { display: inline-block; vertical-align: 1px; margin-right: 10px; width: 8px; height: 8px; background: var(--amber); animation: blink 1.6s steps(2, start) infinite; }
   .dep__t th, .dep__t td { padding: 16px 20px; border-bottom: 1px solid var(--rule); text-align: left; white-space: nowrap; }
   .dep__t thead th { font: 400 .68rem/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--steel); }
   .dep__t .num { text-align: right; }

@@ -9,7 +9,9 @@ const year = new Date().getFullYear();
 ---
 <footer class="ftr">
   <div class="wrap">
-    <p class="ftr__big display" aria-hidden="true">Norwich <span class="amber">&rarr;</span> anywhere</p>
+    <svg class="ftr__big" viewBox="0 0 1000 120" aria-hidden="true" focusable="false">
+      <text x="0" y="104" textLength="1000" lengthAdjust="spacingAndGlyphs">NORWICH <tspan class="ftr__arrow">&rarr;</tspan> ANYWHERE</text>
+    </svg>
     <div class="ftr__grid">
       <div>
         <Logo />
@@ -59,8 +61,9 @@ const year = new Date().getFullYear();
 </footer>
 <style>
   .ftr { border-top: 1px solid var(--rule); padding: 64px 0 32px; background: var(--asphalt); }
-  .ftr__big { font-size: clamp(3rem, 12vw, 11rem); line-height: .85; color: var(--plate); margin: 0 0 56px; max-width: none; }
-  .ftr__big .amber { color: var(--amber-deep); }
+  .ftr__big { width: 100%; height: auto; margin: 0 0 56px; }
+  .ftr__big text { font: 600 132px var(--display); fill: var(--plate); }
+  .ftr__big .ftr__arrow { fill: var(--amber-deep); }
   .ftr__grid { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 40px; }
   .ftr__nap { font-style: normal; margin: 22px 0 16px; color: var(--steel); line-height: 1.8; font-size: .92rem; }
   .ftr__h { font: 400 .75rem/1 var(--mono); letter-spacing: .14em; color: var(--amber); margin: 0 0 18px; }

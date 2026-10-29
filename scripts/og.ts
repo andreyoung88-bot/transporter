@@ -23,7 +23,7 @@ const css = `
 *{margin:0;box-sizing:border-box}
 body{width:1200px;height:630px;background:#0b0b0c;color:#e8e6e1;font-family:B;position:relative;overflow:hidden}
 .g{position:absolute;inset:0;background-image:linear-gradient(#18191c 1px,transparent 1px),linear-gradient(90deg,#18191c 1px,transparent 1px);background-size:40px 40px}
-.map{position:absolute;right:-40px;top:-30px;width:520px;height:780px}
+.map{position:absolute;right:-30px;top:-150px;width:520px;height:780px}
 .c{position:absolute;left:64px;top:56px;bottom:56px;width:720px;display:flex;flex-direction:column}
 .brand{font-size:30px;letter-spacing:4px}
 .brand i{display:block;width:62px;height:3px;background:#f2a93b;margin-top:8px}

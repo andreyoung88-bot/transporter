@@ -119,7 +119,7 @@ const schema = [
         </ul>
         <h3 class="about__sub">Most booked for</h3>
         <p>{d.useCase}.</p>
-        <h3 class="about__sub">Driving the {d.region}</h3>
+        <h3 class="about__sub">On the road: {d.region}</h3>
         <p class="muted">{REGION_NOTES[d.region]}</p>
       </div>
     </div>
@@ -152,7 +152,7 @@ const schema = [
   .rh h1 { font-size: clamp(2.8rem, 6.4vw, 6.2rem); margin-bottom: 28px; }
   .rh__answer { margin-bottom: 32px; }
   .rh__cta { display: flex; gap: 12px; flex-wrap: wrap; }
-  .rh__map { min-height: 420px; border-left: 1px solid var(--rule); }
+  .rh__grid :global(.rh__map) { min-height: 420px; border-left: 1px solid var(--rule); }
   .crumbs { margin-bottom: auto; padding-bottom: 40px; }
   .crumbs ol { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; margin: 0; padding: 0; font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; color: var(--steel); }
   .crumbs li + li::before { content: '/'; margin-right: 8px; color: var(--rule); }
@@ -184,7 +184,7 @@ const schema = [
 
   @media (max-width: 960px) {
     .rh__grid { grid-template-columns: 1fr; min-height: 0; gap: 0; }
-    .rh__map { min-height: 360px; border-left: 0; border-top: 1px solid var(--rule); margin-inline: calc(var(--gutter) * -1); }
+    .rh__grid :global(.rh__map) { min-height: 360px; border-left: 0; border-top: 1px solid var(--rule); margin-inline: calc(var(--gutter) * -1); }
     .rh__copy { padding-bottom: 40px; }
     .sign { margin-top: 32px; }
     .facts__grid, .about__grid { grid-template-columns: 1fr; gap: 40px; }

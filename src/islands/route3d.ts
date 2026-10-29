@@ -51,25 +51,24 @@ const S = 0.1; // map px -> world units
 const toWorld = (data: GeoData, [x, y]: [number, number]) => new Vector3((x - data.w / 2) * S, 0, (y - data.h / 2) * S);
 
 /** Comet-style light trail travelling along the tube's length (uv.x). */
-const trailMaterial = (offset: number, bright: number) =>
+const trailMaterial = (offset: number, bright: number, base = 0.16) =>
   new ShaderMaterial({
     transparent: true,
     depthWrite: false,
     blending: AdditiveBlending,
-    uniforms: { uTime: { value: 0 }, uOffset: { value: offset }, uColor: { value: AMBER }, uBright: { value: bright } },
+    uniforms: { uTime: { value: 0 }, uOffset: { value: offset }, uColor: { value: AMBER }, uBright: { value: bright }, uBase: { value: base } },
     vertexShader: /* glsl */ `
       varying vec2 vUv;
       void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }
     `,
     fragmentShader: /* glsl */ `
-      uniform float uTime; uniform float uOffset; uniform vec3 uColor; uniform float uBright;
+      uniform float uTime; uniform float uOffset; uniform vec3 uColor; uniform float uBright; uniform float uBase;
       varying vec2 vUv;
       void main() {
         float head = fract(uTime * 0.18 + uOffset) * 1.4 - 0.2;
         float d = head - vUv.x;
         float comet = smoothstep(0.32, 0.0, d) * step(0.0, d);
-        float base = 0.16;
-        float a = (base + comet * 1.4) * uBright;
+        float a = (uBase + comet * 1.4) * uBright;
         gl_FragColor = vec4(uColor * (0.7 + comet), a);
       }
     `,
@@ -84,11 +83,11 @@ export async function mount(canvas: HTMLCanvasElement, geoUrl: string, opts: Sce
   renderer.setClearColor(0x000000, 0);
 
   const scene = new Scene();
-  scene.fog = new Fog(0x0b0b0c, 70, 170);
+  scene.fog = new Fog(0x0b0b0c, 130, 300);
 
   const camera = new PerspectiveCamera(32, 1, 1, 400);
 
-  scene.add(new AmbientLight(0xb8bcc6, 0.55));
+  scene.add(new AmbientLight(0xb8bcc6, 0.9));
   const key = new DirectionalLight(0xffd9a0, 1.6);
   key.position.set(60, 80, 40);
   scene.add(key);
@@ -119,11 +118,11 @@ export async function mount(canvas: HTMLCanvasElement, geoUrl: string, opts: Sce
   }
   const land = new ExtrudeGeometry(shapes, { depth: top, bevelEnabled: false, curveSegments: 1 });
   land.rotateX(-Math.PI / 2);
-  world.add(new Mesh(land, new MeshStandardMaterial({ color: 0x1a1b1f, roughness: 0.85, metalness: 0.35 })));
+  world.add(new Mesh(land, new MeshStandardMaterial({ color: 0x2a2c32, roughness: 0.8, metalness: 0.3 })));
 
   const edges = new BufferGeometry();
   edges.setAttribute('position', new BufferAttribute(new Float32Array(edgePts), 3));
-  world.add(new LineSegments(edges, new LineBasicMaterial({ color: 0x5b5f68, transparent: true, opacity: 0.9 })));
+  world.add(new LineSegments(edges, new LineBasicMaterial({ color: 0x8a8e98 })));
 
   // Survey grid on the "ground".
   const gridPts: number[] = [];
@@ -141,7 +140,7 @@ export async function mount(canvas: HTMLCanvasElement, geoUrl: string, opts: Sce
   });
   const placesGeo = new BufferGeometry();
   placesGeo.setAttribute('position', new BufferAttribute(placePts, 3));
-  world.add(new Points(placesGeo, new PointsMaterial({ color: 0x9a9da3, size: lowPower ? 0.5 : 0.42, sizeAttenuation: true })));
+  world.add(new Points(placesGeo, new PointsMaterial({ color: 0xc8cad0, size: lowPower ? 0.7 : 0.6, sizeAttenuation: true })));
 
   // Norwich beacon.
   const o = toWorld(data, data.origin);
@@ -170,9 +169,9 @@ export async function mount(canvas: HTMLCanvasElement, geoUrl: string, opts: Sce
     const curve = new QuadraticBezierCurve3(o.clone(), mid, d);
     const isFocus = opts.focus === pl.s;
     const bright = opts.focus ? (isFocus ? 1.25 : 0.35) : 1;
-    const mat = trailMaterial(i * 0.137, bright);
+    const mat = trailMaterial(i * 0.137, bright, isFocus ? 0.55 : 0.16);
     trails.push(mat);
-    world.add(new Mesh(new TubeGeometry(curve, 64, isFocus ? 0.2 : 0.12, 6, false), mat));
+    world.add(new Mesh(new TubeGeometry(curve, 96, isFocus ? 0.32 : 0.12, 8, false), mat));
     const tick = new Mesh(new CylinderGeometry(0.06, 0.06, 1.6, 4), new MeshBasicMaterial({ color: isFocus ? AMBER : 0xe8e6e1 }));
     tick.position.set(d.x, top + 0.8, d.z);
     world.add(tick);
@@ -181,13 +180,13 @@ export async function mount(canvas: HTMLCanvasElement, geoUrl: string, opts: Sce
 
   // Camera framing.
   const target = new Vector3(0, 0, 4);
-  let radius = 118;
-  let elev = 0.95; // radians above the horizon
-  let yaw = -0.32;
+  let radius = 150;
+  let elev = 1.02; // radians above the horizon
+  let yaw = -0.18;
   if (focusCurve) {
     const fc = focusCurve as QuadraticBezierCurve3;
     target.copy(fc.v0).lerp(fc.v2, 0.5);
-    radius = Math.min(118, Math.max(46, fc.v0.distanceTo(fc.v2) * 1.9));
+    radius = Math.min(150, Math.max(55, fc.v0.distanceTo(fc.v2) * 2.1));
     elev = 0.82;
   }
   const pointer = { x: 0, y: 0, tx: 0, ty: 0 };
